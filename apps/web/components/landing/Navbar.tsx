@@ -63,17 +63,7 @@ const NAV_LINKS = [
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const checkAuth = () => {
-      setIsLoggedIn(!!localStorage.getItem("token"));
-    };
-    checkAuth();
-    window.addEventListener("auth-changed", checkAuth);
-    return () => window.removeEventListener("auth-changed", checkAuth);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -149,21 +139,12 @@ export default function Navbar() {
             <GridIcon />
           </div>
           
-          {isLoggedIn ? (
-            <Link
-              href="/dashboard"
-              className="px-6 py-2.5 rounded-full bg-black text-white text-sm font-bold transition-all hover:bg-zinc-900 active:scale-95 whitespace-nowrap"
-            >
-              Dashboard
-            </Link>
-          ) : (
-            <Link
-              href="/auth/login"
-              className="px-6 py-2.5 rounded-full bg-black text-white text-sm font-bold transition-all hover:bg-zinc-900 active:scale-95 whitespace-nowrap"
-            >
-              Get started
-            </Link>
-          )}
+          <Link
+            href="/auth/login"
+            className="px-6 py-2.5 rounded-full bg-black text-white text-sm font-bold transition-all hover:bg-zinc-900 active:scale-95 whitespace-nowrap"
+          >
+            Get started
+          </Link>
 
           <Link
             href="/schedule"

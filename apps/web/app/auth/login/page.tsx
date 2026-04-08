@@ -27,15 +27,6 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    // Temporary bypass for UI testing
-    setTimeout(() => {
-      localStorage.setItem("token", "mock_token");
-      window.dispatchEvent(new Event("auth-changed"));
-      router.push("/dashboard");
-      setLoading(false);
-    }, 1000);
-
-    /* Commenting out real auth for UI testing
     try {
       const response = await fetch("http://localhost:8000/auth/login", {
         method: "POST",
@@ -64,7 +55,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-    */
   };
 
   return (

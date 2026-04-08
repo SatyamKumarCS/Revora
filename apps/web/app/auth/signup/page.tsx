@@ -36,15 +36,6 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    // Temporary bypass for UI testing
-    setTimeout(() => {
-      localStorage.setItem("token", "mock_token");
-      window.dispatchEvent(new Event("auth-changed"));
-      router.push("/dashboard");
-      setLoading(false);
-    }, 1000);
-
-    /* Commenting out real auth for UI testing
     try {
       const response = await fetch("http://localhost:8000/auth/signup", {
         method: "POST",
@@ -80,7 +71,6 @@ export default function SignupPage() {
     } finally {
       setLoading(false);
     }
-    */
   };
 
   return (
@@ -199,7 +189,7 @@ export default function SignupPage() {
                       <Building className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
                       <input
                         className="w-full rounded-xl border border-white/5 bg-white/[0.03] py-3 pl-11 pr-3 text-sm text-white placeholder:text-white/10 outline-none transition-all duration-300 focus:border-[#5B6EFF]/40 focus:bg-[#5B6EFF]/5 focus:ring-4 focus:ring-[#5B6EFF]/10"
-                        name="company"
+                        name="company_name"
                         placeholder="Cyberdyne"
                         required
                       />
@@ -222,25 +212,41 @@ export default function SignupPage() {
                   </div>
                 </div>
 
-                {/* Password */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Security Key</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
-                    <input
-                      className="w-full rounded-xl border border-white/5 bg-white/[0.03] py-3 pl-11 pr-11 text-sm text-white placeholder:text-white/10 outline-none transition-all duration-300 focus:border-[#5B6EFF]/40 focus:bg-[#5B6EFF]/5 focus:ring-4 focus:ring-[#5B6EFF]/10"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••••••"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors p-1"
-                    >
-                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                    </button>
+                {/* Password and Confirm Password */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Security Key</label>
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
+                      <input
+                        className="w-full rounded-xl border border-white/5 bg-white/[0.03] py-3 pl-11 pr-11 text-sm text-white placeholder:text-white/10 outline-none transition-all duration-300 focus:border-[#5B6EFF]/40 focus:bg-[#5B6EFF]/5 focus:ring-4 focus:ring-[#5B6EFF]/10"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••••••"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors p-1"
+                      >
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Confirm Key</label>
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
+                      <input
+                        className="w-full rounded-xl border border-white/5 bg-white/[0.03] py-3 pl-11 pr-11 text-sm text-white placeholder:text-white/10 outline-none transition-all duration-300 focus:border-[#5B6EFF]/40 focus:bg-[#5B6EFF]/5 focus:ring-4 focus:ring-[#5B6EFF]/10"
+                        name="confirm_password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••••••"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
 
