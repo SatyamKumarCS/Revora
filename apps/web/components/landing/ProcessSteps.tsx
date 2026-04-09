@@ -71,21 +71,27 @@ export default function ProcessSteps() {
   const step = STEPS[activeStep]!;
 
   /* Scroll-triggered fade-in for the whole section */
-  useGSAP(() => {
-    if (!sectionRef.current) return;
-    gsap.fromTo(sectionRef.current.querySelector("[data-bento-grid]"),
-      { y: 60, opacity: 0 },
-      {
-        y: 0, opacity: 1, ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          end: "top 30%",
-          scrub: 1,
+  useGSAP(
+    () => {
+      if (!sectionRef.current) return;
+      gsap.fromTo(
+        sectionRef.current.querySelector("[data-bento-grid]"),
+        { y: 60, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            end: "top 30%",
+            scrub: 1,
+          },
         },
-      }
-    );
-  }, { scope: sectionRef });
+      );
+    },
+    { scope: sectionRef },
+  );
 
   return (
     <section ref={sectionRef} className={s.section}>
@@ -102,7 +108,9 @@ export default function ProcessSteps() {
           </div>
 
           <h3 className={s.subTitle}>
-            Automated outbound sales<br />from start to finish.
+            Automated outbound sales
+            <br />
+            from start to finish.
           </h3>
 
           <p className={s.subDesc}>
@@ -113,7 +121,6 @@ export default function ProcessSteps() {
 
       {/* ── Bento Grid ── */}
       <div className={s.bento} data-bento-grid>
-
         {/* Left: Image */}
         <div className={s.cellImage}>
           <div className={s.imagePlaceholder}>
@@ -145,8 +152,16 @@ export default function ProcessSteps() {
 
         {/* Top-right: Arrow navigation */}
         <div className={s.cellArrows}>
-          <button className={s.arrowBtn} onClick={prev} aria-label="Previous step">←</button>
-          <button className={s.arrowBtn} onClick={next} aria-label="Next step">→</button>
+          <button
+            className={s.arrowBtn}
+            onClick={prev}
+            aria-label="Previous step"
+          >
+            ←
+          </button>
+          <button className={s.arrowBtn} onClick={next} aria-label="Next step">
+            →
+          </button>
         </div>
 
         {/* Center: Step content */}
@@ -159,24 +174,38 @@ export default function ProcessSteps() {
 
         {/* Right: CTA */}
         <div className={s.cellCTA}>
-          <button 
+          <button
             className={s.ctaBtn}
             onClick={() => window.dispatchEvent(new Event("open-launch-modal"))}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <rect width="18" height="18" x="3" y="3" rx="2" />
               <path d="M8 12h8" />
               <path d="M12 8v8" />
             </svg>
             Book a Demo
           </button>
-          <span className={s.ctaLabel}>Book a demo to see<br />this process in action.</span>
+          <span className={s.ctaLabel}>
+            Book a demo to see
+            <br />
+            this process in action.
+          </span>
         </div>
 
         {/* Bottom-center: Stat */}
         <div className={s.cellStat}>
           <div className={s.statValue}>
-            {step.stat}<span className={s.statUnit}>{step.statUnit}</span>
+            {step.stat}
+            <span className={s.statUnit}>{step.statUnit}</span>
           </div>
           <div className={s.statLabel}>{step.statLabel}</div>
         </div>

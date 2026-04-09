@@ -13,11 +13,10 @@ import {
   Search,
   Bell,
   Plus,
-  TrendingUp,
   Share2,
   BarChart2,
   Puzzle,
-  LucideIcon
+  LucideIcon,
 } from "lucide-react";
 
 interface SidebarItemProps {
@@ -36,7 +35,9 @@ const SidebarItem = ({ icon: Icon, label, active, href }: SidebarItemProps) => (
         : "text-white/40 hover:bg-white/5 hover:text-white"
     }`}
   >
-    <Icon className={`h-4 w-4 shrink-0 ${active ? "text-[#f05a28]" : "group-hover:text-white"} transition-colors`} />
+    <Icon
+      className={`h-4 w-4 shrink-0 ${active ? "text-[#f05a28]" : "group-hover:text-white"} transition-colors`}
+    />
     <span className="font-semibold text-sm">{label}</span>
   </Link>
 );
@@ -44,7 +45,11 @@ const SidebarItem = ({ icon: Icon, label, active, href }: SidebarItemProps) => (
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<{ full_name?: string; email?: string; role?: string } | null>(null);
+  const [user, setUser] = useState<{
+    full_name?: string;
+    email?: string;
+    role?: string;
+  } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -74,21 +79,60 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <Zap className="h-4 w-4 text-white fill-current" />
               </div>
               <div>
-                <p className="text-sm font-black tracking-tight uppercase">Revora</p>
-                <p className="text-[9px] text-white/30 uppercase tracking-[0.15em] font-bold">Growth Engine</p>
+                <p className="text-sm font-black tracking-tight uppercase">
+                  Revora
+                </p>
+                <p className="text-[9px] text-white/30 uppercase tracking-[0.15em] font-bold">
+                  Growth Engine
+                </p>
               </div>
             </div>
           </div>
 
           {/* Nav */}
           <nav className="p-3 space-y-0.5 mt-2">
-            <SidebarItem icon={LayoutDashboard} label="Dashboard" active={pathname === "/dashboard"} href="/dashboard" />
-            <SidebarItem icon={Users} label="Leads" active={pathname === "/dashboard/leads"} href="/dashboard/leads" />
-            <SidebarItem icon={Megaphone} label="Campaigns" active={pathname.startsWith("/dashboard/campaigns")} href="/dashboard/campaigns" />
-            <SidebarItem icon={Share2} label="Outreach" active={pathname === "/dashboard/outreach"} href="/dashboard/outreach" />
-            <SidebarItem icon={BarChart2} label="Analytics" active={pathname === "/dashboard/analytics"} href="/dashboard/analytics" />
-            <SidebarItem icon={Puzzle} label="Integrations" active={pathname === "/dashboard/integrations"} href="/dashboard/integrations" />
-            <SidebarItem icon={Settings} label="Settings" active={pathname === "/dashboard/settings"} href="/dashboard/settings" />
+            <SidebarItem
+              icon={LayoutDashboard}
+              label="Dashboard"
+              active={pathname === "/dashboard"}
+              href="/dashboard"
+            />
+            <SidebarItem
+              icon={Users}
+              label="Leads"
+              active={pathname === "/dashboard/leads"}
+              href="/dashboard/leads"
+            />
+            <SidebarItem
+              icon={Megaphone}
+              label="Campaigns"
+              active={pathname.startsWith("/dashboard/campaigns")}
+              href="/dashboard/campaigns"
+            />
+            <SidebarItem
+              icon={Share2}
+              label="Outreach"
+              active={pathname === "/dashboard/outreach"}
+              href="/dashboard/outreach"
+            />
+            <SidebarItem
+              icon={BarChart2}
+              label="Analytics"
+              active={pathname === "/dashboard/analytics"}
+              href="/dashboard/analytics"
+            />
+            <SidebarItem
+              icon={Puzzle}
+              label="Integrations"
+              active={pathname === "/dashboard/integrations"}
+              href="/dashboard/integrations"
+            />
+            <SidebarItem
+              icon={Settings}
+              label="Settings"
+              active={pathname === "/dashboard/settings"}
+              href="/dashboard/settings"
+            />
           </nav>
         </div>
 
@@ -99,10 +143,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               {user?.full_name?.charAt(0).toUpperCase() || "A"}
             </div>
             <div className="overflow-hidden flex-1 min-w-0">
-              <p className="text-xs font-bold truncate">{user?.full_name || "Agent"}</p>
-              <p className="text-[10px] text-white/30 truncate uppercase tracking-wider">{user?.role || "Member"}</p>
+              <p className="text-xs font-bold truncate">
+                {user?.full_name || "Agent"}
+              </p>
+              <p className="text-[10px] text-white/30 truncate uppercase tracking-wider">
+                {user?.role || "Member"}
+              </p>
             </div>
-            <button onClick={handleLogout} title="Sign out" className="text-white/20 hover:text-red-400 transition-colors shrink-0">
+            <button
+              onClick={handleLogout}
+              title="Sign out"
+              className="text-white/20 hover:text-red-400 transition-colors shrink-0"
+            >
               <LogOut className="h-3.5 w-3.5" />
             </button>
           </div>

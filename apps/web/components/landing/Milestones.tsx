@@ -24,27 +24,31 @@ const STATS = [
 export default function Milestones() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(() => {
-    if (!sectionRef.current) return;
-    const cards = sectionRef.current.querySelectorAll("[data-stat]");
+  useGSAP(
+    () => {
+      if (!sectionRef.current) return;
+      const cards = sectionRef.current.querySelectorAll("[data-stat]");
 
-    /* Staggered count-up feel: cards slide up one by one */
-    gsap.fromTo(cards,
-      { y: 40, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        stagger: 0.1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-          end: "top 25%",
-          scrub: 1,
+      /* Staggered count-up feel: cards slide up one by one */
+      gsap.fromTo(
+        cards,
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+            end: "top 25%",
+            scrub: 1,
+          },
         },
-      }
-    );
-  }, { scope: sectionRef });
+      );
+    },
+    { scope: sectionRef },
+  );
 
   return (
     <section id="resources" ref={sectionRef} className={s.section}>
@@ -65,8 +69,8 @@ export default function Milestones() {
           <span className={s.descDot}>
             <span className={s.descDotInner} />
           </span>
-          Driving measurable growth worldwide with every lead discovered,
-          email personalized, and meeting booked.
+          Driving measurable growth worldwide with every lead discovered, email
+          personalized, and meeting booked.
         </p>
       </div>
 
@@ -76,12 +80,17 @@ export default function Milestones() {
           <div key={i} className={s.card} data-stat>
             <div className={s.cardLabel}>
               {stat.label.split("\n").map((line, j) => (
-                <span key={j}>{line}<br /></span>
+                <span key={j}>
+                  {line}
+                  <br />
+                </span>
               ))}
             </div>
             <div className={s.cardValue}>
               {stat.value}
-              {stat.accent && <span className={s.cardValueAccent}>{stat.accent}</span>}
+              {stat.accent && (
+                <span className={s.cardValueAccent}>{stat.accent}</span>
+              )}
             </div>
             <div className={s.cardGlow} />
           </div>

@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, ChevronDown, Copy, Trash2, RefreshCw, Send, CheckCheck } from "lucide-react";
+import {
+  Sparkles,
+  ChevronDown,
+  Copy,
+  Trash2,
+  RefreshCw,
+  Send,
+  CheckCheck,
+} from "lucide-react";
 import Boneyard from "../../../components/Boneyard";
 
 interface Campaign {
@@ -21,46 +29,60 @@ interface EmailDraft {
   sentiment_score: string;
 }
 
+interface EmailDraftResponse extends EmailDraft {
+  error?: string;
+}
+
 type Tone = "Professional" | "Casual" | "Direct";
 
 export default function OutreachPage() {
-  const [campaigns, setCampaigns]           = useState<Campaign[]>([]);
-  const [selectedCampaign, setSelected]     = useState<Campaign | null>(null);
-  const [dropdownOpen, setDropdownOpen]     = useState(false);
-  const [goal, setGoal]                     = useState("");
-  const [tone, setTone]                     = useState<Tone>("Professional");
-  const [valueProps, setValueProps]         = useState("");
-  const [subjectFormat, setSubjectFormat]   = useState("");
-  const [draft, setDraft]                   = useState<EmailDraft | null>(null);
-  const [generating, setGenerating]         = useState(false);
-  const [copied, setCopied]                 = useState(false);
-  const [draftVersion, setDraftVersion]     = useState(1);
-  const [error, setError]                   = useState<string | null>(null);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [selectedCampaign, setSelected] = useState<Campaign | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [goal, setGoal] = useState("");
+  const [tone, setTone] = useState<Tone>("Professional");
+  const [valueProps, setValueProps] = useState("");
+  const [subjectFormat, setSubjectFormat] = useState("");
+  const [draft, setDraft] = useState<EmailDraft | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [draftVersion, setDraftVersion] = useState(1);
+  const [error, setError] = useState<string | null>(null);
   const [loadingCampaigns, setLoadingCampaigns] = useState(true);
 
   /* ── load campaigns with ICP ── */
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign/`, { cache: "no-store" });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/campaign/`,
+          { cache: "no-store" },
+        );
         if (!res.ok) return;
         const data: Campaign[] = await res.json();
         const filtered = data.filter((c) => c.has_icp);
         const withLeads = await Promise.all(
           filtered.map(async (c) => {
             try {
-              const lr = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign/${c.id}/leads`, { cache: "no-store" });
+              const lr = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/campaign/${c.id}/leads`,
+                { cache: "no-store" },
+              );
               const leads = lr.ok ? await lr.json() : [];
-              return { ...c, lead_count: Array.isArray(leads) ? leads.length : 0 };
+              return {
+                ...c,
+                lead_count: Array.isArray(leads) ? leads.length : 0,
+              };
             } catch {
               return { ...c, lead_count: 0 };
             }
-          })
+          }),
         );
         setCampaigns(withLeads);
         if (withLeads.length > 0) setSelected(withLeads[0]);
-      } catch {}
-      finally {
+      } catch {
+        console.error("Failed to load campaigns");
+      } finally {
         setLoadingCampaigns(false);
       }
     };
@@ -77,7 +99,10 @@ export default function OutreachPage() {
               AI Beta
             </span>
           </div>
-          <p className="text-xs text-white/30 mt-0.5">Generate personalised outreach emails powered by your campaign data and ICP filters.</p>
+          <p className="text-xs text-white/30 mt-0.5">
+            Generate personalised outreach emails powered by your campaign data
+            and ICP filters.
+          </p>
         </div>
 
         <Boneyard cards={2} lines={6} />
@@ -105,23 +130,23 @@ export default function OutreachPage() {
             subject_format: subjectFormat,
             improve: !resetVersion,
             iteration: nextVersion,
-            previous_subject: !resetVersion ? (draft?.subject || "") : "",
-            previous_body: !resetVersion ? (draft?.body || "") : "",
+            previous_subject: !resetVersion ? draft?.subject || "" : "",
+            previous_body: !resetVersion ? draft?.body || "" : "",
           }),
-        }
+        },
       );
       if (!res.ok) throw new Error("Generation failed");
-      const data: EmailDraft = await res.json();
-      if ((data as any).error) throw new Error((data as any).error);
+      const data: EmailDraftResponse = await res.json();
+      if (data.error) throw new Error(data.error);
       setDraft(data);
-    } catch (e: any) {
-      setError(e.message || "Something went wrong");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleGenerate   = () => callGenerateAPI(true);
+  const handleGenerate = () => callGenerateAPI(true);
   const handleRegenerate = () => callGenerateAPI(false);
 
   const handleCopy = () => {
@@ -133,7 +158,6 @@ export default function OutreachPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 font-syne min-h-full">
-
       {/* Page header */}
       <div>
         <div className="flex items-center gap-2">
@@ -142,23 +166,31 @@ export default function OutreachPage() {
             AI Beta
           </span>
         </div>
-        <p className="text-xs text-white/30 mt-0.5">Generate personalised outreach emails powered by your campaign data and ICP filters.</p>
+        <p className="text-xs text-white/30 mt-0.5">
+          Generate personalised outreach emails powered by your campaign data
+          and ICP filters.
+        </p>
       </div>
 
       {/* Two-panel layout */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.1fr] gap-5">
-
         {/* ── LEFT: Controls ── */}
         <div className="space-y-4">
-
           {/* Target Audience */}
           <div className="rounded-2xl bg-[#111] border border-white/[0.06] p-5 space-y-3">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f05a28]">Target Audience</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f05a28]">
+              Target Audience
+            </p>
 
             {campaigns.length === 0 ? (
               <p className="text-white/30 text-sm py-2">
                 No campaigns with ICP configured yet.{" "}
-                <a href="/dashboard/campaigns" className="text-[#f05a28] hover:underline">Set up a campaign →</a>
+                <a
+                  href="/dashboard/campaigns"
+                  className="text-[#f05a28] hover:underline"
+                >
+                  Set up a campaign →
+                </a>
               </p>
             ) : (
               <div className="relative">
@@ -171,13 +203,18 @@ export default function OutreachPage() {
                       <Sparkles className="h-4 w-4 text-[#f05a28]" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-white">{selectedCampaign?.campaign_name}</p>
+                      <p className="text-sm font-bold text-white">
+                        {selectedCampaign?.campaign_name}
+                      </p>
                       <p className="text-[11px] text-white/30">
-                        {selectedCampaign?.lead_count ?? 0} active prospects in segment
+                        {selectedCampaign?.lead_count ?? 0} active prospects in
+                        segment
                       </p>
                     </div>
                   </div>
-                  <ChevronDown className={`h-4 w-4 text-white/30 shrink-0 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown
+                    className={`h-4 w-4 text-white/30 shrink-0 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 {dropdownOpen && (
@@ -185,17 +222,27 @@ export default function OutreachPage() {
                     {campaigns.map((c) => (
                       <button
                         key={c.id}
-                        onClick={() => { setSelected(c); setDropdownOpen(false); setDraft(null); }}
+                        onClick={() => {
+                          setSelected(c);
+                          setDropdownOpen(false);
+                          setDraft(null);
+                        }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left"
                       >
                         <div className="h-7 w-7 rounded-lg bg-[#f05a28]/10 flex items-center justify-center shrink-0">
                           <Sparkles className="h-3.5 w-3.5 text-[#f05a28]" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-white truncate">{c.campaign_name}</p>
-                          <p className="text-[11px] text-white/30">{c.lead_count ?? 0} prospects · {c.product_name}</p>
+                          <p className="text-sm font-bold text-white truncate">
+                            {c.campaign_name}
+                          </p>
+                          <p className="text-[11px] text-white/30">
+                            {c.lead_count ?? 0} prospects · {c.product_name}
+                          </p>
                         </div>
-                        {c.id === selectedCampaign?.id && <CheckCheck className="h-4 w-4 text-[#f05a28] shrink-0" />}
+                        {c.id === selectedCampaign?.id && (
+                          <CheckCheck className="h-4 w-4 text-[#f05a28] shrink-0" />
+                        )}
                       </button>
                     ))}
                   </div>
@@ -206,7 +253,9 @@ export default function OutreachPage() {
 
           {/* Email Strategy */}
           <div className="rounded-2xl bg-[#111] border border-white/[0.06] p-5 space-y-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f05a28]">Email Strategy</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f05a28]">
+              Email Strategy
+            </p>
 
             {/* Campaign Goal */}
             <div className="space-y-1.5">
@@ -224,7 +273,9 @@ export default function OutreachPage() {
 
             {/* Brand Tone */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest">Brand Tone</label>
+              <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest">
+                Brand Tone
+              </label>
               <div className="flex gap-2">
                 {(["Professional", "Casual", "Direct"] as Tone[]).map((t) => (
                   <button
@@ -254,7 +305,9 @@ export default function OutreachPage() {
                 placeholder="e.g. Quick question for {{company_name}}"
                 className="w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-[#f05a28]/40 transition-colors"
               />
-              <p className="text-[10px] text-white/20">Use {"{{company_name}}"} for personalization.</p>
+              <p className="text-[10px] text-white/20">
+                Use {"{{company_name}}"} for personalization.
+              </p>
             </div>
 
             {/* Key Value Props */}
@@ -273,7 +326,9 @@ export default function OutreachPage() {
                 }
                 className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-[#f05a28]/40 transition-colors resize-none"
               />
-              <p className="text-[10px] text-white/20">Leave blank to auto-generate from your product description.</p>
+              <p className="text-[10px] text-white/20">
+                Leave blank to auto-generate from your product description.
+              </p>
             </div>
 
             {error && (
@@ -289,9 +344,13 @@ export default function OutreachPage() {
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#f05a28] text-white font-black text-sm hover:bg-[#d44e22] transition-all shadow-[0_4px_16px_rgba(240,90,40,0.35)] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {generating ? (
-                <><RefreshCw className="h-4 w-4 animate-spin" /> Generating…</>
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" /> Generating…
+                </>
               ) : (
-                <><Sparkles className="h-4 w-4" /> Generate email draft using AI</>
+                <>
+                  <Sparkles className="h-4 w-4" /> Generate email draft using AI
+                </>
               )}
             </button>
           </div>
@@ -299,12 +358,20 @@ export default function OutreachPage() {
           {/* Stats strip — from API */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-[#111] border border-white/[0.06] p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 mb-1">Open Rate Est.</p>
-              <p className="text-2xl font-black text-[#f05a28]">{draft?.open_rate?.trim() || "—"}</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 mb-1">
+                Open Rate Est.
+              </p>
+              <p className="text-2xl font-black text-[#f05a28]">
+                {draft?.open_rate?.trim() || "—"}
+              </p>
             </div>
             <div className="rounded-xl bg-[#111] border border-white/[0.06] p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 mb-1">Sentiment Score</p>
-              <p className="text-2xl font-black text-[#f05a28]">{draft?.sentiment_score?.trim() || "—"}</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 mb-1">
+                Sentiment Score
+              </p>
+              <p className="text-2xl font-black text-[#f05a28]">
+                {draft?.sentiment_score?.trim() || "—"}
+              </p>
             </div>
           </div>
         </div>
@@ -328,10 +395,17 @@ export default function OutreachPage() {
                   title="Copy to clipboard"
                   className="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-white transition-colors"
                 >
-                  {copied ? <CheckCheck className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                  {copied ? (
+                    <CheckCheck className="h-4 w-4 text-emerald-400" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </button>
                 <button
-                  onClick={() => { setDraft(null); setDraftVersion(1); }}
+                  onClick={() => {
+                    setDraft(null);
+                    setDraftVersion(1);
+                  }}
                   title="Clear draft"
                   className="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-red-400 transition-colors"
                 >
@@ -346,7 +420,9 @@ export default function OutreachPage() {
             {generating ? (
               <div className="flex flex-col items-center justify-center h-full py-20 gap-3">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-[#f05a28]" />
-                <p className="text-white/30 text-sm font-bold">Crafting your email…</p>
+                <p className="text-white/30 text-sm font-bold">
+                  Crafting your email…
+                </p>
               </div>
             ) : !draft ? (
               <div className="flex flex-col items-center justify-center h-full py-20 px-6 text-center">
@@ -356,18 +432,28 @@ export default function OutreachPage() {
                 <p className="text-white font-bold mb-1">No draft yet</p>
                 <p className="text-white/30 text-sm max-w-xs">
                   Select a campaign, define your strategy, and click{" "}
-                  <span className="text-[#f05a28] font-bold">Generate email draft using AI</span> to create a personalised email using your real campaign and ICP data.
+                  <span className="text-[#f05a28] font-bold">
+                    Generate email draft using AI
+                  </span>{" "}
+                  to create a personalised email using your real campaign and
+                  ICP data.
                 </p>
               </div>
             ) : (
               <div className="p-5 space-y-5">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-2">Subject Line</p>
-                  <p className="text-base font-bold text-white leading-snug">{draft.subject}</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-2">
+                    Subject Line
+                  </p>
+                  <p className="text-base font-bold text-white leading-snug">
+                    {draft.subject}
+                  </p>
                 </div>
                 <div className="h-px bg-white/[0.05]" />
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-3">Email Body</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-3">
+                    Email Body
+                  </p>
                   <div className="text-sm text-white/70 leading-relaxed whitespace-pre-line font-medium">
                     {draft.body}
                   </div>
@@ -390,7 +476,9 @@ export default function OutreachPage() {
                 onClick={handleCopy}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white text-xs font-bold hover:bg-white/10 transition-colors"
               >
-                {copied ? <CheckCheck className="h-3.5 w-3.5 text-emerald-400" /> : null}
+                {copied ? (
+                  <CheckCheck className="h-3.5 w-3.5 text-emerald-400" />
+                ) : null}
                 {copied ? "Copied!" : "Save Draft"}
               </button>
               <button className="ml-auto flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#f05a28] text-white text-xs font-black hover:bg-[#d44e22] transition-all shadow-[0_4px_12px_rgba(240,90,40,0.3)]">

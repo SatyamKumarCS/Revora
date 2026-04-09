@@ -55,21 +55,27 @@ export default function FAQ() {
     setOpenIdx(openIdx === i ? -1 : i);
   };
 
-  useGSAP(() => {
-    if (!sectionRef.current) return;
-    gsap.fromTo(sectionRef.current.querySelector("[data-faq-content]"),
-      { y: 50, opacity: 0 },
-      {
-        y: 0, opacity: 1, ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-          end: "top 25%",
-          scrub: 1,
+  useGSAP(
+    () => {
+      if (!sectionRef.current) return;
+      gsap.fromTo(
+        sectionRef.current.querySelector("[data-faq-content]"),
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+            end: "top 25%",
+            scrub: 1,
+          },
         },
-      }
-    );
-  }, { scope: sectionRef });
+      );
+    },
+    { scope: sectionRef },
+  );
 
   return (
     <section ref={sectionRef} className={s.section}>
@@ -86,7 +92,9 @@ export default function FAQ() {
           </div>
 
           <h3 className={s.subTitle}>
-            Simple explanations to help<br />you get started move faster.
+            Simple explanations to help
+            <br />
+            you get started move faster.
           </h3>
 
           <p className={s.subDesc}>
@@ -110,7 +118,9 @@ export default function FAQ() {
                   {faq.q}
                   <span className={s.icon}>
                     <span className={s.iconBar} />
-                    <span className={`${s.iconBar} ${isOpen ? s.iconBarVOpen : s.iconBarV}`} />
+                    <span
+                      className={`${s.iconBar} ${isOpen ? s.iconBarVOpen : s.iconBarV}`}
+                    />
                   </span>
                 </button>
                 <div className={`${s.answer} ${isOpen ? s.answerOpen : ""}`}>
@@ -128,7 +138,12 @@ export default function FAQ() {
             <img
               src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80"
               alt="Team collaborating on platform"
-              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "16px" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "16px",
+              }}
             />
             <div className={s.imageBadge}>
               <div className={s.imageBadgeDot} />
@@ -138,8 +153,9 @@ export default function FAQ() {
           <div className={s.ctaBox}>
             <h4 className={s.ctaTitle}>You still have questions?</h4>
             <p className={s.ctaDesc}>
-              Every team&apos;s needs are different. Let our experts show you how AutoPilot SDR can work
-              for your specific requirements — let&apos;s have a chat and find the right solution for you.
+              Every team&apos;s needs are different. Let our experts show you
+              how AutoPilot SDR can work for your specific requirements —
+              let&apos;s have a chat and find the right solution for you.
             </p>
             <button className={s.ctaLink}>
               Let&apos;s have a chat

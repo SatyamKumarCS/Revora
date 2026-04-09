@@ -16,26 +16,30 @@ if (typeof window !== "undefined") {
 export default function FeaturesBento() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(() => {
-    if (!sectionRef.current) return;
-    const cards = sectionRef.current.querySelectorAll("[data-bento]");
+  useGSAP(
+    () => {
+      if (!sectionRef.current) return;
+      const cards = sectionRef.current.querySelectorAll("[data-bento]");
 
-    gsap.fromTo(cards,
-      { y: 60, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        stagger: 0.12,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          end: "top 20%",
-          scrub: 1,
+      gsap.fromTo(
+        cards,
+        { y: 60, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.12,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            end: "top 20%",
+            scrub: 1,
+          },
         },
-      }
-    );
-  }, { scope: sectionRef });
+      );
+    },
+    { scope: sectionRef },
+  );
 
   return (
     <section ref={sectionRef} className={s.section}>
@@ -43,12 +47,20 @@ export default function FeaturesBento() {
       <div className={s.glowB} />
 
       <div className={s.grid}>
-
         {/* ── 1. Ask AI ── */}
         <div className={s.cardAI} data-bento>
           <div className={s.aiPrompt}>
             Ask AI anything...
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.64 5.64l2.83 2.83M15.54 15.54l2.83 2.83M5.64 18.36l2.83-2.83M15.54 8.46l2.83-2.83" />
             </svg>
           </div>
@@ -85,15 +97,21 @@ export default function FeaturesBento() {
 
           <div className={s.statsRow}>
             <div className={s.statItem}>
-              <div className={s.statNum}>0<span>%</span></div>
+              <div className={s.statNum}>
+                0<span>%</span>
+              </div>
               <div className={s.statName}>Growth</div>
             </div>
             <div className={s.statItem}>
-              <div className={s.statNum}>11<span>%</span></div>
+              <div className={s.statNum}>
+                11<span>%</span>
+              </div>
               <div className={s.statName}>Sales</div>
             </div>
             <div className={s.statItem}>
-              <div className={s.statNum}>21<span>%</span></div>
+              <div className={s.statNum}>
+                21<span>%</span>
+              </div>
               <div className={s.statName}>Efficiency</div>
             </div>
           </div>
@@ -153,14 +171,16 @@ export default function FeaturesBento() {
             {[75, 55, 90, 40, 65].map((fill, i) => (
               <div key={i} className={s.processBar} style={{ height: "70px" }}>
                 <div className={s.processBarTrack}>
-                  <div className={s.processBarFill} style={{ height: fill + "%" }} />
+                  <div
+                    className={s.processBarFill}
+                    style={{ height: fill + "%" }}
+                  />
                   <div className={s.processBarDot} />
                 </div>
               </div>
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );

@@ -65,26 +65,30 @@ const PLANS = [
 export default function Pricing() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(() => {
-    if (!sectionRef.current) return;
-    const rows = sectionRef.current.querySelectorAll("[data-plan]");
+  useGSAP(
+    () => {
+      if (!sectionRef.current) return;
+      const rows = sectionRef.current.querySelectorAll("[data-plan]");
 
-    gsap.fromTo(rows,
-      { y: 50, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        stagger: 0.15,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 70%",
-          end: "top 10%",
-          scrub: 1,
+      gsap.fromTo(
+        rows,
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.15,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 70%",
+            end: "top 10%",
+            scrub: 1,
+          },
         },
-      }
-    );
-  }, { scope: sectionRef });
+      );
+    },
+    { scope: sectionRef },
+  );
 
   return (
     <section id="pricing" ref={sectionRef} className={s.section}>
@@ -101,11 +105,14 @@ export default function Pricing() {
           </div>
 
           <h3 className={s.subTitle}>
-            Flexible, transparent plans.<br />Built for clarity and growth.
+            Flexible, transparent plans.
+            <br />
+            Built for clarity and growth.
           </h3>
 
           <p className={s.subDesc}>
-            Scale at your own pace — choose only what you need, when you need it. Nothing extra, nothing locked in.
+            Scale at your own pace — choose only what you need, when you need
+            it. Nothing extra, nothing locked in.
           </p>
         </div>
       </div>
@@ -159,7 +166,10 @@ export default function Pricing() {
             <div className={s.cellFeatures}>
               <ul className={s.featureList}>
                 {plan.features.map((f, j) => (
-                  <li key={j} className={f.bold ? s.featureBold : s.featureItem}>
+                  <li
+                    key={j}
+                    className={f.bold ? s.featureBold : s.featureItem}
+                  >
                     {f.text}
                   </li>
                 ))}
@@ -169,7 +179,16 @@ export default function Pricing() {
             {/* CTA */}
             <div className={s.cellCTA}>
               <button className={s.selectBtn}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 Select Plan

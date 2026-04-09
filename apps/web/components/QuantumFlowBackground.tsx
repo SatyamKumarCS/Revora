@@ -4,6 +4,15 @@ import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import styles from "./QuantumFlowBackground.module.css";
 
+interface TrailPoint {
+  x: number;
+  y: number;
+  age: number;
+  force: number;
+  vx: number;
+  vy: number;
+}
+
 class TouchTexture {
   size: number;
   width: number;
@@ -11,8 +20,8 @@ class TouchTexture {
   maxAge: number;
   radius: number;
   speed: number;
-  trail: any[];
-  last: any;
+  trail: TrailPoint[];
+  last: { x: number; y: number } | null;
   canvas!: HTMLCanvasElement;
   ctx!: CanvasRenderingContext2D;
   texture!: THREE.Texture;
@@ -80,7 +89,7 @@ class TouchTexture {
     this.trail.push({ x: point.x, y: point.y, age: 0, force, vx, vy });
   }
 
-  drawPoint(point: any) {
+  drawPoint(point: TrailPoint) {
     const pos = { x: point.x * this.width, y: (1 - point.y) * this.height };
     let intensity = 1;
 
@@ -111,14 +120,20 @@ class GradientBackground {
   getViewSize: () => { width: number; height: number };
   scene: THREE.Scene;
   mesh!: THREE.Mesh;
-  uniforms: any;
+  uniforms: Record<string, THREE.IUniform<unknown>>;
 
-  constructor(scene: THREE.Scene, getViewSize: () => { width: number; height: number }, touchTexture: THREE.Texture) {
+  constructor(
+    scene: THREE.Scene,
+    getViewSize: () => { width: number; height: number },
+    touchTexture: THREE.Texture,
+  ) {
     this.scene = scene;
     this.getViewSize = getViewSize;
     this.uniforms = {
       uTime: { value: 0 },
-      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      uResolution: {
+        value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+      },
       uColor1: { value: new THREE.Vector3(0.945, 0.353, 0.133) },
       uColor2: { value: new THREE.Vector3(0.0, 0.259, 0.22) },
       uColor3: { value: new THREE.Vector3(0.945, 0.353, 0.133) },
@@ -285,38 +300,46 @@ export default function QuantumFlowBackground() {
   const cursorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     let reqId: number;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
-    let renderer = new THREE.WebGLRenderer({
+    const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
       stencil: false,
       depth: false,
     });
-    
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
-    // Mount canvas
-    containerRef.current.appendChild(renderer.domElement);
 
-    let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
+    // Mount canvas
+    container.appendChild(renderer.domElement);
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      10000,
+    );
     camera.position.z = 50;
-    
-    let scene = new THREE.Scene();
+
+    const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a0e27);
 
-    let touchTexture = new TouchTexture();
+    const touchTexture = new TouchTexture();
 
     const getViewSize = () => {
-      const h = Math.abs(camera.position.z * Math.tan((camera.fov * Math.PI / 180) / 2) * 2);
+      const h = Math.abs(
+        camera.position.z * Math.tan((camera.fov * Math.PI) / 180 / 2) * 2,
+      );
       return { width: h * camera.aspect, height: h };
     };
 
-    let bg = new GradientBackground(scene, getViewSize, touchTexture.texture);
+    const bg = new GradientBackground(scene, getViewSize, touchTexture.texture);
 
     // Initialise Quantum scheme constants
     const u = bg.uniforms;
@@ -344,14 +367,15 @@ export default function QuantumFlowBackground() {
     };
 
     const handleMouseMove = (e: MouseEvent | TouchEvent) => {
-      let clientX = 0, clientY = 0;
+      let clientX = 0,
+        clientY = 0;
 
       if (e instanceof TouchEvent) {
         clientX = e.touches[0]?.clientX || 0;
         clientY = e.touches[0]?.clientY || 0;
       } else {
-        clientX = (e as MouseEvent).clientX;
-        clientY = (e as MouseEvent).clientY;
+        clientX = e.clientX;
+        clientY = e.clientY;
       }
 
       touchTexture.addTouch({
@@ -376,7 +400,7 @@ export default function QuantumFlowBackground() {
       bg.update(delta);
       renderer.render(scene, camera);
     };
-    
+
     tick();
 
     return () => {
@@ -384,10 +408,10 @@ export default function QuantumFlowBackground() {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchmove", handleMouseMove);
-      
+
       // Cleanup three
-      if (renderer.domElement && containerRef.current) {
-        containerRef.current.removeChild(renderer.domElement);
+      if (renderer.domElement && container) {
+        container.removeChild(renderer.domElement);
       }
       renderer.dispose();
       touchTexture.texture.dispose();

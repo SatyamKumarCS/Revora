@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../../../components/landing/Navbar";
-import { Eye, EyeOff, Mail, Lock, ShieldCheck, Zap, Globe } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ShieldCheck, Globe } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,11 +28,14 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        },
+      );
 
       const data = await response.json();
 
@@ -61,7 +64,6 @@ export default function LoginPage() {
     <>
       <Navbar />
       <div className="flex h-screen w-full items-center justify-center bg-[#050505] p-4 md:p-6 lg:p-14 selection:bg-[#5B6EFF]/30 overflow-hidden">
-
         {/* Animated Background Orbs */}
         <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-15%] right-[-10%] h-[550px] w-[550px] rounded-full bg-[#5B6EFF]/10 blur-[140px] animate-pulse"></div>
@@ -71,7 +73,6 @@ export default function LoginPage() {
 
         {/* Outer glass card */}
         <div className="relative z-10 flex h-[88vh] min-h-[580px] max-h-[800px] w-full max-w-[1300px] items-stretch overflow-hidden rounded-[36px] border border-white/10 bg-white/[0.02] backdrop-blur-2xl shadow-[0_8px_80px_rgba(0,0,0,0.7),inset_0_0_0_1px_rgba(255,255,255,0.06)]">
-
           {/* Inner top-edge glass highlight */}
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></div>
           {/* Inner bottom-edge subtle glow */}
@@ -81,9 +82,9 @@ export default function LoginPage() {
           <div className="relative hidden w-[55%] flex-col justify-between overflow-hidden border-r border-white/5 p-16 lg:flex">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
-              <Image 
-                src="/authimg/login_bg.jpg" 
-                alt="Login background" 
+              <Image
+                src="/authimg/login_bg.jpg"
+                alt="Login background"
                 fill
                 className="object-cover opacity-30 grayscale hover:grayscale-0 transition-all duration-1000"
                 priority
@@ -94,8 +95,12 @@ export default function LoginPage() {
             <div className="relative z-10 flex flex-col gap-12">
               {/* Logo */}
               <div className="flex items-center gap-3">
-                 
-                <span className="text-2xl font-black tracking-tighter text-white"><span className="text-3xl tracking-tighter text-[#5B6EFF]">R</span>EVORA</span>
+                <span className="text-2xl font-black tracking-tighter text-white">
+                  <span className="text-3xl tracking-tighter text-[#5B6EFF]">
+                    R
+                  </span>
+                  EVORA
+                </span>
               </div>
 
               {/* Hero text */}
@@ -109,7 +114,8 @@ export default function LoginPage() {
                   Workspace.
                 </h1>
                 <p className="max-w-md text-sm leading-relaxed text-white/35 font-medium font-syne">
-                  Join 10,000+ teams automating their workflows with Revora&apos;s next-gen autonomous agents.
+                  Join 10,000+ teams automating their workflows with
+                  Revora&apos;s next-gen autonomous agents.
                 </p>
               </div>
 
@@ -135,8 +141,12 @@ export default function LoginPage() {
                       {card.icon}
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-[#5B6EFF] transition-colors">{card.title}</h3>
-                      <p className="text-xs text-white/30 leading-relaxed mt-0.5">{card.desc}</p>
+                      <h3 className="text-sm font-bold text-white group-hover:text-[#5B6EFF] transition-colors">
+                        {card.title}
+                      </h3>
+                      <p className="text-xs text-white/30 leading-relaxed mt-0.5">
+                        {card.desc}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -147,8 +157,18 @@ export default function LoginPage() {
             <div className="relative z-10 flex items-center justify-between border-t border-white/[0.06] pt-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/20">
               <div>© 2026 Revora Autonomous Inc.</div>
               <div className="flex gap-6">
-                <Link href="#" className="hover:text-[#5B6EFF] transition-colors">Documentation</Link>
-                <Link href="#" className="hover:text-[#5B6EFF] transition-colors">Privacy Policy</Link>
+                <Link
+                  href="#"
+                  className="hover:text-[#5B6EFF] transition-colors"
+                >
+                  Documentation
+                </Link>
+                <Link
+                  href="#"
+                  className="hover:text-[#5B6EFF] transition-colors"
+                >
+                  Privacy Policy
+                </Link>
               </div>
             </div>
 
@@ -157,16 +177,16 @@ export default function LoginPage() {
 
           {/* ── RIGHT PANEL 45% ── */}
           <div className="flex w-full flex-col justify-center lg:w-[45%] overflow-y-auto relative px-8 py-6 md:px-12">
-
             {/* Right panel glass background */}
             <div className="absolute inset-0 bg-black/30 backdrop-blur-xl pointer-events-none"></div>
             {/* Subtle right panel inner top highlight */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"></div>
 
             <div className="w-full max-w-[390px] mx-auto relative z-10">
-
               <div className="mb-7">
-                <h2 className="text-3xl font-bold tracking-tight text-white mb-1.5">Welcome back</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-white mb-1.5">
+                  Welcome back
+                </h2>
                 <p className="text-white/35 font-medium text-sm leading-relaxed">
                   Access your autonomous operations cluster.
                 </p>
@@ -182,7 +202,9 @@ export default function LoginPage() {
               <form className="space-y-4" onSubmit={handleSubmit}>
                 {/* Email */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Access Email</label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">
+                    Access Email
+                  </label>
                   <div className="relative group">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300 z-10" />
                     <input
@@ -198,8 +220,15 @@ export default function LoginPage() {
                 {/* Password */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Security Key</label>
-                    <Link href="#" className="text-[10px] font-bold text-[#5B6EFF]/50 hover:text-[#5B6EFF] transition-colors uppercase tracking-wider">Forgot?</Link>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">
+                      Security Key
+                    </label>
+                    <Link
+                      href="#"
+                      className="text-[10px] font-bold text-[#5B6EFF]/50 hover:text-[#5B6EFF] transition-colors uppercase tracking-wider"
+                    >
+                      Forgot?
+                    </Link>
                   </div>
                   <div className="relative group">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300 z-10" />
@@ -256,7 +285,11 @@ export default function LoginPage() {
                   {
                     label: "Google",
                     icon: (
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
                         <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.187 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
                       </svg>
                     ),
@@ -264,7 +297,11 @@ export default function LoginPage() {
                   {
                     label: "Github",
                     icon: (
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <svg
+                        className="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
                         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.01 1.741 2.66 1.258 3.328.961.101-.743.398-1.258.726-1.548-2.664-.316-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.803 5.623-5.476 5.922.43.371.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                       </svg>
                     ),

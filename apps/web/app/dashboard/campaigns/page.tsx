@@ -21,25 +21,28 @@ interface Campaign {
 type TabType = "all" | "active" | "paused" | "archived";
 
 const STATUS_STYLES: Record<string, string> = {
-  active:   "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  paused:   "bg-yellow-500/10  text-yellow-400  border-yellow-500/20",
+  active: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  paused: "bg-yellow-500/10  text-yellow-400  border-yellow-500/20",
   archived: "bg-white/5        text-white/25    border-white/10",
 };
 const DOT_STYLES: Record<string, string> = {
-  active:   "bg-emerald-400",
-  paused:   "bg-yellow-400",
+  active: "bg-emerald-400",
+  paused: "bg-yellow-400",
   archived: "bg-white/25",
 };
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [tab, setTab]             = useState<TabType>("all");
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<TabType>("all");
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign/`, { cache: "no-store" });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/campaign/`,
+          { cache: "no-store" },
+        );
         if (!res.ok) return;
         const data: Campaign[] = await res.json();
         setCampaigns(data);
@@ -56,9 +59,9 @@ export default function CampaignsPage() {
       : campaigns.filter((c) => (c.status || "active") === tab);
 
   const tabs: { id: TabType; label: string }[] = [
-    { id: "all",      label: "All Campaigns" },
-    { id: "active",   label: "Active" },
-    { id: "paused",   label: "Paused" },
+    { id: "all", label: "All Campaigns" },
+    { id: "active", label: "Active" },
+    { id: "paused", label: "Paused" },
     { id: "archived", label: "Archived" },
   ];
 
@@ -66,8 +69,12 @@ export default function CampaignsPage() {
     <div className="space-y-6 animate-in fade-in duration-500 font-syne">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Campaigns</h1>
-        <p className="text-sm text-white/40 mt-1">Manage and monitor your growth initiatives across all channels.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-white">
+          Campaigns
+        </h1>
+        <p className="text-sm text-white/40 mt-1">
+          Manage and monitor your growth initiatives across all channels.
+        </p>
       </div>
 
       {/* Tabs */}
@@ -97,7 +104,15 @@ export default function CampaignsPage() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-white/30 text-sm">
           {tab === "all" ? (
-            <>No campaigns yet. <Link href="/dashboard/campaigns/new" className="text-[#f05a28] hover:underline">Create your first →</Link></>
+            <>
+              No campaigns yet.{" "}
+              <Link
+                href="/dashboard/campaigns/new"
+                className="text-[#f05a28] hover:underline"
+              >
+                Create your first →
+              </Link>
+            </>
           ) : (
             `No ${tab} campaigns.`
           )}
@@ -105,9 +120,15 @@ export default function CampaignsPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filtered.map((c) => {
-            const status   = (c.status || "active") as "active" | "paused" | "archived";
-            const progress = c.lead_limit > 0 ? Math.round((c.lead_count / c.lead_limit) * 100) : 0;
-            const source   = c.lead_sources?.[0]?.toUpperCase() || "HUNTER";
+            const status = (c.status || "active") as
+              | "active"
+              | "paused"
+              | "archived";
+            const progress =
+              c.lead_limit > 0
+                ? Math.round((c.lead_count / c.lead_limit) * 100)
+                : 0;
+            const source = c.lead_sources?.[0]?.toUpperCase() || "HUNTER";
 
             return (
               <div
@@ -117,9 +138,15 @@ export default function CampaignsPage() {
                 {/* Card Header */}
                 <div className="px-5 pt-5 pb-4 flex items-start justify-between">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f05a28] mb-2">{source}</p>
-                    <h3 className="text-lg font-bold text-white leading-tight">{c.campaign_name}</h3>
-                    <p className="text-xs text-white/30 mt-0.5 font-medium truncate max-w-[220px]">{c.product_name}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#f05a28] mb-2">
+                      {source}
+                    </p>
+                    <h3 className="text-lg font-bold text-white leading-tight">
+                      {c.campaign_name}
+                    </h3>
+                    <p className="text-xs text-white/30 mt-0.5 font-medium truncate max-w-[220px]">
+                      {c.product_name}
+                    </p>
                   </div>
 
                   {/* Badge — read-only on the list page */}
@@ -134,8 +161,12 @@ export default function CampaignsPage() {
                         Incomplete
                       </Link>
                     ) : (
-                      <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${STATUS_STYLES[status]}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${DOT_STYLES[status]}`} />
+                      <span
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${STATUS_STYLES[status]}`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full shrink-0 ${DOT_STYLES[status]}`}
+                        />
                         {status}
                       </span>
                     )}
@@ -145,12 +176,20 @@ export default function CampaignsPage() {
                 {/* Metrics */}
                 <div className="px-5 pb-4 grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-black/30 border border-white/[0.04]">
-                    <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/25 mb-1.5">LEADS GENERATED</p>
-                    <p className="text-2xl font-black text-[#f05a28]">{c.lead_count.toLocaleString()}</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/25 mb-1.5">
+                      LEADS GENERATED
+                    </p>
+                    <p className="text-2xl font-black text-[#f05a28]">
+                      {c.lead_count.toLocaleString()}
+                    </p>
                   </div>
                   <div className="p-3 rounded-xl bg-black/30 border border-white/[0.04]">
-                    <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/25 mb-1.5">LEAD TARGET</p>
-                    <p className="text-2xl font-black text-[#f05a28]">{c.lead_limit.toLocaleString()}</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/25 mb-1.5">
+                      LEAD TARGET
+                    </p>
+                    <p className="text-2xl font-black text-[#f05a28]">
+                      {c.lead_limit.toLocaleString()}
+                    </p>
                   </div>
                 </div>
 
@@ -158,9 +197,15 @@ export default function CampaignsPage() {
                 <div className="px-5 pb-4">
                   <div className="flex items-center justify-between text-xs mb-2">
                     <span className="text-white/40 font-medium">
-                      Progress: <span className="text-white font-bold">{c.lead_count.toLocaleString()}</span> / {c.lead_limit.toLocaleString()} leads
+                      Progress:{" "}
+                      <span className="text-white font-bold">
+                        {c.lead_count.toLocaleString()}
+                      </span>{" "}
+                      / {c.lead_limit.toLocaleString()} leads
                     </span>
-                    <span className="text-[#f05a28] font-black">{progress}%</span>
+                    <span className="text-[#f05a28] font-black">
+                      {progress}%
+                    </span>
                   </div>
                   <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                     <div
@@ -174,7 +219,14 @@ export default function CampaignsPage() {
                 <div className="px-5 pb-4 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="flex -space-x-1.5">
-                      {[...Array(Math.min(3, Math.max(1, Math.floor(c.lead_count / 10) + 1)))].map((_, i) => (
+                      {[
+                        ...Array(
+                          Math.min(
+                            3,
+                            Math.max(1, Math.floor(c.lead_count / 10) + 1),
+                          ),
+                        ),
+                      ].map((_, i) => (
                         <div
                           key={i}
                           className="h-6 w-6 rounded-full bg-gradient-to-br from-[#f05a28] to-orange-700 border-2 border-[#141414] flex items-center justify-center text-[8px] font-black text-white"
@@ -184,14 +236,21 @@ export default function CampaignsPage() {
                       ))}
                     </div>
                     {c.lead_count > 0 && (
-                      <span className="text-xs text-white/30 font-bold">+{c.lead_count}</span>
+                      <span className="text-xs text-white/30 font-bold">
+                        +{c.lead_count}
+                      </span>
                     )}
                   </div>
                   <Link
-                    href={c.has_icp ? `/dashboard/campaigns/${c.id}/leads` : `/dashboard/campaigns/${c.id}/icp`}
+                    href={
+                      c.has_icp
+                        ? `/dashboard/campaigns/${c.id}/leads`
+                        : `/dashboard/campaigns/${c.id}/icp`
+                    }
                     className="flex items-center gap-1 text-sm font-bold hover:gap-2 transition-all text-[#f05a28]"
                   >
-                    {c.has_icp ? "View Leads" : "Setup ICP"} <ChevronRight className="h-4 w-4" />
+                    {c.has_icp ? "View Leads" : "Setup ICP"}{" "}
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
               </div>
@@ -209,7 +268,9 @@ export default function CampaignsPage() {
           <Plus className="h-5 w-5" />
         </Link>
         <p className="text-sm font-bold text-white">Start New Campaign</p>
-        <p className="text-xs text-white/30 mt-0.5">Set up a new outreach flow</p>
+        <p className="text-xs text-white/30 mt-0.5">
+          Set up a new outreach flow
+        </p>
       </div>
     </div>
   );

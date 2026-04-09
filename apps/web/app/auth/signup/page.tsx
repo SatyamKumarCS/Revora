@@ -37,18 +37,21 @@ export default function SignupPage() {
     setError("");
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          full_name,
-          email,
-          password,
-          confirm_password,
-          company_name: company_name || "N/A",
-          role,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            full_name,
+            email,
+            password,
+            confirm_password,
+            company_name: company_name || "N/A",
+            role,
+          }),
+        },
+      );
 
       const data = await response.json();
 
@@ -77,7 +80,6 @@ export default function SignupPage() {
     <>
       <Navbar />
       <div className="flex h-screen w-full items-center justify-center bg-[#050505] p-4 md:p-6 lg:p-16 selection:bg-[#5B6EFF]/30 overflow-hidden">
-
         {/* Animated Background Elements */}
         <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] right-[-10%] h-[400px] w-[400px] rounded-full bg-[#5B6EFF]/10 blur-[120px] animate-pulse"></div>
@@ -86,7 +88,6 @@ export default function SignupPage() {
 
         {/* Main Glass Layout */}
         <div className="relative z-10 flex h-[88vh] min-h-[600px] max-h-[800px] w-full max-w-[1300px] items-stretch overflow-hidden rounded-[32px] border border-white/10 bg-black/40 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
-
           {/* Neon Border Glow */}
           <div className="absolute inset-0 pointer-events-none rounded-[32px] border border-[#5B6EFF]/20 shadow-[inset_0_0_20px_rgba(240,90,40,0.05)]"></div>
 
@@ -94,9 +95,9 @@ export default function SignupPage() {
           <div className="relative hidden w-[55%] flex-col justify-between overflow-hidden border-r border-white/5 p-16 lg:flex">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
-              <Image 
-                src="/authimg/signup_bg.jpg" 
-                alt="Signup background" 
+              <Image
+                src="/authimg/signup_bg.jpg"
+                alt="Signup background"
                 fill
                 className="object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000"
                 priority
@@ -106,7 +107,12 @@ export default function SignupPage() {
 
             <div className="relative z-10 flex flex-col gap-12">
               <div className="flex items-center gap-3">
-                <span className="text-2xl font-black tracking-tighter text-white"><span className="text-3xl tracking-tighter text-[#5B6EFF]">R</span>EVORA</span>
+                <span className="text-2xl font-black tracking-tighter text-white">
+                  <span className="text-3xl tracking-tighter text-[#5B6EFF]">
+                    R
+                  </span>
+                  EVORA
+                </span>
               </div>
 
               <div className="mt-4 space-y-5">
@@ -119,7 +125,8 @@ export default function SignupPage() {
                   Legacy.
                 </h1>
                 <p className="max-w-md text-base leading-relaxed text-white/40 font-medium font-syne">
-                  Scale your operations beyond human limits with AI that understands your business intent.
+                  Scale your operations beyond human limits with AI that
+                  understands your business intent.
                 </p>
               </div>
 
@@ -142,8 +149,18 @@ export default function SignupPage() {
             <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/20">
               <div>© 2026 Revora Autonomous Inc.</div>
               <div className="flex gap-6">
-                <Link href="#" className="hover:text-[#5B6EFF] transition-colors">Documentation</Link>
-                <Link href="#" className="hover:text-[#5B6EFF] transition-colors">Privacy Policy</Link>
+                <Link
+                  href="#"
+                  className="hover:text-[#5B6EFF] transition-colors"
+                >
+                  Documentation
+                </Link>
+                <Link
+                  href="#"
+                  className="hover:text-[#5B6EFF] transition-colors"
+                >
+                  Privacy Policy
+                </Link>
               </div>
             </div>
 
@@ -153,9 +170,10 @@ export default function SignupPage() {
           {/* Right Side: 45% */}
           <div className="flex w-full flex-col justify-center bg-black/60 px-8 py-6 md:px-12 lg:w-[45%] overflow-y-auto relative">
             <div className="w-full max-w-[400px] mx-auto z-10">
-
               <div className="mb-7">
-                <h2 className="text-3xl font-bold tracking-tight text-white mb-1.5">Create Account</h2>
+                <h2 className="text-3xl font-bold tracking-tight text-white mb-1.5">
+                  Create Account
+                </h2>
                 <p className="text-white/40 font-medium text-sm leading-relaxed">
                   Join the next wave of autonomous automation.
                 </p>
@@ -172,7 +190,9 @@ export default function SignupPage() {
                 {/* Full Name + Organization */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Full Name</label>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">
+                      Full Name
+                    </label>
                     <div className="relative group">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
                       <input
@@ -184,7 +204,9 @@ export default function SignupPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Organization</label>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">
+                      Organization
+                    </label>
                     <div className="relative group">
                       <Building className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
                       <input
@@ -199,7 +221,9 @@ export default function SignupPage() {
 
                 {/* Email */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Email Address</label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">
+                    Email Address
+                  </label>
                   <div className="relative group">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
                     <input
@@ -215,7 +239,9 @@ export default function SignupPage() {
                 {/* Password and Confirm Password */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Security Key</label>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">
+                      Security Key
+                    </label>
                     <div className="relative group">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
                       <input
@@ -230,13 +256,19 @@ export default function SignupPage() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors p-1"
                       >
-                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                        {showPassword ? (
+                          <EyeOff size={15} />
+                        ) : (
+                          <Eye size={15} />
+                        )}
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">Confirm Key</label>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#5B6EFF] ml-1">
+                      Confirm Key
+                    </label>
                     <div className="relative group">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[#5B6EFF] transition-all duration-300" />
                       <input
@@ -252,7 +284,9 @@ export default function SignupPage() {
 
                 {/* Role Selector */}
                 <div className="space-y-2 pt-1">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 ml-1 block">Node Protocol</label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 ml-1 block">
+                    Node Protocol
+                  </label>
                   <div className="flex p-1 rounded-xl bg-white/[0.03] border border-white/5 gap-1.5">
                     {["founder", "recruiter", "developer"].map((r) => (
                       <button

@@ -22,9 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${syne.variable}`}>
         {/* <QuantumFlowBackground /> */}
-        <SmoothScrolling>
-          {children}
-        </SmoothScrolling>
+        <SmoothScrolling>{children}</SmoothScrolling>
       </body>
     </html>
   );

@@ -24,24 +24,31 @@ const LOGOS = [
 export default function Integrations() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(() => {
-    if (!sectionRef.current) return;
-    const bento = sectionRef.current.querySelector("[data-int-bento]");
-    if (!bento) return;
+  useGSAP(
+    () => {
+      if (!sectionRef.current) return;
+      const bento = sectionRef.current.querySelector("[data-int-bento]");
+      if (!bento) return;
 
-    gsap.fromTo(bento,
-      { y: 50, opacity: 0, scale: 0.97 },
-      {
-        y: 0, opacity: 1, scale: 1, ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-          end: "top 25%",
-          scrub: 1,
+      gsap.fromTo(
+        bento,
+        { y: 50, opacity: 0, scale: 0.97 },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 75%",
+            end: "top 25%",
+            scrub: 1,
+          },
         },
-      }
-    );
-  }, { scope: sectionRef });
+      );
+    },
+    { scope: sectionRef },
+  );
 
   return (
     <section id="solutions" ref={sectionRef} className={s.section}>
@@ -61,8 +68,8 @@ export default function Integrations() {
             <span className={s.hn}>Integrations</span>
           </h2>
           <p className={s.desc}>
-            Connect your CRM and sales tools into one powerful ecosystem to
-            sync leads, track replies, and manage pipelines effortlessly.
+            Connect your CRM and sales tools into one powerful ecosystem to sync
+            leads, track replies, and manage pipelines effortlessly.
           </p>
         </div>
       </div>
@@ -92,7 +99,11 @@ export default function Integrations() {
             </div>
           </div>
           <div>
-            <div className={s.cellTitle}>Pipeline<br />Analytics</div>
+            <div className={s.cellTitle}>
+              Pipeline
+              <br />
+              Analytics
+            </div>
             <div className={s.cellDesc}>
               Track email opens, replies, and meetings booked across teams.
             </div>
@@ -156,7 +167,13 @@ export default function Integrations() {
 
         {/* 5 · Uptime 99% */}
         <div className={`${s.cell} ${s.cellUptime}`}>
-          <svg className={s.uptimeIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg
+            className={s.uptimeIcon}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
             <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z" />
           </svg>
           <div className={s.uptimeVal}>
@@ -169,13 +186,19 @@ export default function Integrations() {
       <div className={s.platforms}>
         <div className={s.logoArea}>
           <p className={s.platText}>
-            Your favorite sales tools are<br />ready to be connected.
+            Your favorite sales tools are
+            <br />
+            ready to be connected.
           </p>
           <div className={s.logoGrid}>
             {LOGOS.map((l, i) => (
               <div key={i} className={s.logoCard}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`https://cdn.simpleicons.org/${l.icon}`} alt={l.name} className={s.logoImg} />
+                <img
+                  src={`https://cdn.simpleicons.org/${l.icon}`}
+                  alt={l.name}
+                  className={s.logoImg}
+                />
               </div>
             ))}
           </div>
@@ -185,7 +208,9 @@ export default function Integrations() {
 
         <div className={s.footerArea}>
           <p className={s.platText}>
-            Receive assistance from our integration<br />specialists.
+            Receive assistance from our integration
+            <br />
+            specialists.
           </p>
           <div className={s.footerBtnWrap}>
             <button className={s.footerBtn}>Instant Support</button>

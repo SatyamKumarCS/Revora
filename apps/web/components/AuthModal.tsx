@@ -7,7 +7,7 @@ import styles from "./AuthModal.module.css";
 const ROLES = [
   { id: "founder", label: "Founder", description: "Shape the roadmap" },
   { id: "operator", label: "Operator", description: "Keep delivery sharp" },
-  { id: "investor", label: "Investor", description: "Track portfolio wins" }
+  { id: "investor", label: "Investor", description: "Track portfolio wins" },
 ];
 
 type Mode = "login" | "signup";
@@ -57,7 +57,11 @@ export default function AuthModal() {
   return (
     <div className={`${styles.overlay} ${isOpen ? styles.overlayOpen : ""}`}>
       <div className={styles.modal} role="dialog" aria-modal="true">
-        <button className={styles.closeBtn} onClick={closeModal} aria-label="Close">
+        <button
+          className={styles.closeBtn}
+          onClick={closeModal}
+          aria-label="Close"
+        >
           ×
         </button>
 
@@ -84,12 +88,14 @@ export default function AuthModal() {
         <div className={styles.modeBody}>
           {mode === "login" ? (
             <p className={styles.modeDescription}>
-              Returning to build momentum? Jump back into your workspace and keep scaling at lightspeed.
+              Returning to build momentum? Jump back into your workspace and
+              keep scaling at lightspeed.
             </p>
           ) : (
             <>
               <p className={styles.modeDescription}>
-                Choose the hat you wear most. We’ll personalize onboarding for your flow — you can switch anytime.
+                Choose the hat you wear most. We’ll personalize onboarding for
+                your flow — you can switch anytime.
               </p>
               <div className={styles.roleGrid}>
                 {ROLES.map((item) => (
