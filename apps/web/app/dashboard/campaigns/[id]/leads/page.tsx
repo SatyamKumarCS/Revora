@@ -43,7 +43,7 @@ export default function LeadsResultPage({ params }: { params: Promise<{ id: stri
   const fetchLeads = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign/${campaignId}`, { cache: "no-store" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign/${campaignId}/leads`, { cache: "no-store" });
       if (res.ok) setLeads(await res.json());
     } catch {
       console.error("Failed to fetch leads");

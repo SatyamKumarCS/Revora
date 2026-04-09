@@ -12,6 +12,7 @@ interface Campaign {
   goal: string;
   lead_sources: string[];
   lead_limit: number;
+  lead_count?: number;
 }
 
 interface Lead {
@@ -39,17 +40,7 @@ export default function DashboardOverview() {
         const data: Campaign[] = await res.json();
         setCampaigns(data);
 
-        // Fetch lead counts for each campaign in parallel
-        const statsPromises = data.map(async (c) => {
-          try {
-            const lr = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign/${c.id}`, { cache: "no-store" });
-            const leads: Lead[] = lr.ok ? await lr.json() : [];
-            return { ...c, lead_count: leads.length };
-          } catch {
-            return { ...c, lead_count: 0 };
-          }
-        });
-        const stats = await Promise.all(statsPromises);
+        const stats: CampaignStats[] = data.map((c) => ({ ...c, lead_count: c.lead_count ?? 0 }));
         setCampaignStats(stats);
         setTotalLeads(stats.reduce((s, c) => s + c.lead_count, 0));
       } finally {

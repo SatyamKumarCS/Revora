@@ -1,26 +1,43 @@
-from typing import Optional
+from typing import Optional, List
 from app.services.lead_generation_strategy import (
     LeadGenerationStrategy,
     ApolloLeadStrategy,
     LinkedInLeadStrategy,
-    HunterLeadStrategy
+    HunterLeadStrategy,
+    CompositeLeadStrategy
 )
 
 class LeadGeneratorFactory:
     """
-    DESIGN PATTERN: Factory Pattern
+    Factory for retrieving lead generation strategies.
+    DESIGN PATTERN: Factory
     """
     
     @staticmethod
     def get_strategy(source_name: str) -> Optional[LeadGenerationStrategy]:
-        source_name = source_name.lower().strip()
+        """Returns a single strategy based on name."""
+        name = source_name.lower().strip()
+        normalized = name.replace(".io", "")
         
-        if source_name == "apollo":
+        if normalized == "apollo":
             return ApolloLeadStrategy()
-        elif source_name == "linkedin":
+        elif normalized == "linkedin":
             return LinkedInLeadStrategy()
-        elif source_name == "hunter":
+        elif normalized == "hunter":
             return HunterLeadStrategy()
-        else:
-            print(f"Warning: No valid LeadGenerationStrategy found for '{source_name}'")
-            return None
+        return None
+
+    @staticmethod
+    def get_composite_strategy(sources: List[str]) -> LeadGenerationStrategy:
+        """Returns a Composite strategy combining multiple sources."""
+        strategies = []
+        for src in sources:
+            strat = LeadGeneratorFactory.get_strategy(src)
+            if strat:
+                strategies.append(strat)
+        
+        # Default to Hunter if none found or explicit
+        if not strategies:
+            strategies = [HunterLeadStrategy()]
+            
+        return CompositeLeadStrategy(strategies)

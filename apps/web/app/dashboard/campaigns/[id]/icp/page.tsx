@@ -21,6 +21,7 @@ export default function ICPConfigurationPage({ params }: { params: Promise<{ id:
     const location = form.get("location") as string;
     const company_size = form.get("company_size") as string;
     const job_titles = form.get("job_titles") as string;
+    const target_domain = (form.get("target_domain") as string | null)?.trim() || null;
 
     setLoading(true);
     setError("");
@@ -29,7 +30,14 @@ export default function ICPConfigurationPage({ params }: { params: Promise<{ id:
       const icpRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/icp/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ campaign_id: campaignId, industry, location, company_size, job_titles }),
+        body: JSON.stringify({ 
+          campaign_id: campaignId, 
+          industry, 
+          location, 
+          company_size, 
+          job_titles,
+          target_domain
+        }),
       });
       if (!icpRes.ok) throw new Error("Failed to save ICP Profile");
 
@@ -159,6 +167,19 @@ export default function ICPConfigurationPage({ params }: { params: Promise<{ id:
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-white/50">Target Domain (Recommended for Hunter)</label>
+              <input
+                type="text"
+                name="target_domain"
+                placeholder="e.g. stripe.com"
+                className={inputClass}
+              />
+              <p className="text-[10px] text-[#f05a28]/60 font-bold ml-1 italic">
+                Add a company website domain to improve lead quality and hit-rate.
+              </p>
             </div>
 
             {/* Info box */}

@@ -1,38 +1,32 @@
 import os
 import requests
+import re
+import math
 from abc import ABC, abstractmethod
-from typing import List, Dict
-
-from app.services.apollo_adapter import ApolloAdapter
+from typing import List, Dict, Optional
 
 class LeadGenerationStrategy(ABC):
     """
-    DESIGN PATTERN: Strategy Pattern
-    
-    OOP CONCEPTS: Abstraction, Polymorphism
+    Abstract Base Class for lead generation strategies.
+    DESIGN PATTERN: Strategy (Interface)
     """
-    
     @abstractmethod
-    def generate_leads(self, icp, limit: int = 50) -> List[Dict]:
+    def generate_leads(self, icp: any, limit: int = 50) -> List[Dict]:
+        """Generates leads based on ICP criteria."""
         pass
 
-
 class ApolloLeadStrategy(LeadGenerationStrategy):
-    """
-    Concrete Strategy for generating leads using the Apollo API.
-    """
+    """Lead generation using the Apollo.io API."""
     def __init__(self):
-        self.api_key = os.getenv("APOLLO_API_KEY")
-        self.url = "https://api.apollo.io/v1/mixed_people/search"
-        self.adapter = ApolloAdapter()
+        self._api_key = os.getenv("APOLLO_API_KEY")
+        self._url = "https://api.apollo.io/v1/mixed_people/search"
 
-    def generate_leads(self, icp, limit: int = 50) -> List[Dict]:
-        if not self.api_key:
-            print("Warning: APOLLO_API_KEY is not set.")
+    def generate_leads(self, icp, limit: int = 10) -> List[Dict]:
+        if not self._api_key:
             return []
 
         payload = {
-            "api_key": self.api_key,
+            "api_key": self._api_key,
             "q_organization_industries": [icp.industry] if hasattr(icp, 'industry') and icp.industry else [],
             "person_titles": [icp.job_titles] if hasattr(icp, 'job_titles') and icp.job_titles else [],
             "q_organization_locations": [icp.location] if hasattr(icp, 'location') and icp.location else [],
@@ -41,133 +35,161 @@ class ApolloLeadStrategy(LeadGenerationStrategy):
         }
 
         try:
-            response = requests.post(self.url, json=payload)
+            response = requests.post(self._url, json=payload, timeout=15)
             if response.status_code != 200:
-                print(f"Apollo API Error {response.status_code}: {response.text}")
                 return []
             
             data = response.json()
-        except Exception as e:
-            print(f"Error calling Apollo API: {e}")
-            return []
-
-        leads = []
-        for person in data.get("people", []):
-            # Using the Adapter to normalize the data
-            normalized_lead = self.adapter.normalize_lead_data(person)
-            leads.append(normalized_lead)
-
-        return leads
-
-
-class LinkedInLeadStrategy(LeadGenerationStrategy):
-    """
-    Another Concrete Strategy example for generating leads.
-    """
-    def generate_leads(self, icp, limit: int = 50) -> List[Dict]:
-        # Dummy implementation returning fake data to demonstrate polymorphic behavior!
-        print(f"Executing LinkedIn strategy for {limit} leads...")
-        return [
-            {
-                "first_name": "John",
-                "last_name": "LinkedInDoe",
-                "email": "john.doe@linkedin-fake.com",
-                "company": "LinkedIn Test Org",
-                "job_title": "CTO",
-                "linkedin": "https://linkedin.com/in/johndoe"
-            }
-        ]
-
-class HunterLeadStrategy(LeadGenerationStrategy):
-    """
-    Concrete Strategy for generating leads using the Hunter.io API.
-    Searches multiple company domains based on the ICP industry to return
-    leads from different organizations in the same industry.
-    """
-
-    # Industry keyword → list of company domains to search
-    INDUSTRY_DOMAINS = {
-        "edtech": ["coursera.org", "udemy.com", "duolingo.com", "chegg.com", "kahoot.com"],
-        "fintech": ["stripe.com", "plaid.com", "brex.com", "chime.com", "robinhood.com"],
-        "saas": ["notion.so", "loom.com", "figma.com", "miro.com", "airtable.com"],
-        "ecommerce": ["shopify.com", "bigcommerce.com", "klaviyo.com", "gorgias.com", "recharge.com"],
-        "healthtech": ["zocdoc.com", "hims.com", "ro.co", "veeva.com", "doximity.com"],
-        "marketing": ["hubspot.com", "mailchimp.com", "semrush.com", "hootsuite.com", "sprinklr.com"],
-        "hr": ["lattice.com", "rippling.com", "workday.com", "greenhouse.io", "lever.co"],
-        "cybersecurity": ["crowdstrike.com", "sentinelone.com", "darktrace.com", "lacework.com", "snyk.io"],
-        "ai": ["openai.com", "cohere.com", "scale.com", "huggingface.co", "weights.gg"],
-        "logistics": ["flexport.com", "shipbob.com", "transfix.com", "project44.com", "loadsmart.com"],
-        "real estate": ["opendoor.com", "compass.com", "buildium.com", "procore.com", "matterport.com"],
-        "software": ["gitlab.com", "atlassian.com", "jetbrains.com", "hashicorp.com", "datadog.com"],
-    }
-
-    def __init__(self):
-        self.api_key = os.getenv("HUNTER_API_KEY")
-        self.url = "https://api.hunter.io/v2/domain-search"
-
-    def _get_domains_for_industry(self, industry: str) -> List[str]:
-        """Find relevant domains for the given industry keyword."""
-        if not industry:
-            return ["stripe.com"]
-        industry_lower = industry.lower().strip()
-        # Exact match first
-        if industry_lower in self.INDUSTRY_DOMAINS:
-            return self.INDUSTRY_DOMAINS[industry_lower]
-        # Partial match fallback
-        for key, domains in self.INDUSTRY_DOMAINS.items():
-            if key in industry_lower or industry_lower in key:
-                return domains
-        # No match — use industry as a domain guess (e.g. "acme.com")
-        print(f"No industry mapping found for '{industry}', falling back to raw value.")
-        return [industry_lower if "." in industry_lower else f"{industry_lower.replace(' ', '')}.com"]
-
-    def _search_domain(self, domain: str, per_domain_limit: int) -> List[Dict]:
-        """Search Hunter for a single domain and return normalized leads."""
-        params = {
-            "domain": domain,
-            "api_key": self.api_key,
-            "limit": per_domain_limit,
-        }
-        try:
-            response = requests.get(self.url, params=params, timeout=15)
-            if response.status_code != 200:
-                print(f"Hunter API Error for {domain} — {response.status_code}: {response.text[:200]}")
-                return []
-            data = response.json().get("data", {})
-            org_name = data.get("organization") or domain
             leads = []
-            for person in data.get("emails", []):
+            for person in data.get("people", []):
                 leads.append({
-                    "first_name": person.get("first_name") or "",
-                    "last_name": person.get("last_name") or "",
-                    "email": person.get("value") or "",
-                    "company": org_name,
-                    "job_title": person.get("position") or "Employee",
-                    "linkedin": person.get("linkedin") or "",
+                    "first_name": person.get("first_name", ""),
+                    "last_name": person.get("last_name", ""),
+                    "email": person.get("email", ""),
+                    "company": person.get("organization", {}).get("name", ""),
+                    "job_title": person.get("title", ""),
+                    "linkedin": person.get("linkedin_url", "")
                 })
             return leads
-        except Exception as e:
-            print(f"Error fetching Hunter leads for {domain}: {e}")
+        except Exception:
             return []
+
+class HunterLeadStrategy(LeadGenerationStrategy):
+    """Lead generation using the Hunter.io API (Domain Search)."""
+    def __init__(self):
+        self._api_key = os.getenv("HUNTER_API_KEY")
+        self._url = "https://api.hunter.io/v2/domain-search"
 
     def generate_leads(self, icp, limit: int = 50) -> List[Dict]:
-        if not self.api_key:
-            print("Warning: HUNTER_API_KEY is not set.")
+        if not self._api_key:
             return []
+        
+        # Priority 1: LLM discovered domains
+        # Priority 2: Explicit target domain from ICP
+        # Priority 3: Dynamic domain discovery from ICP industry context
+        domains = list(getattr(icp, 'discovered_domains', []) or [])
+        target_domain = getattr(icp, 'target_domain', None)
+        if target_domain:
+            domains.append(target_domain)
 
-        industry = getattr(icp, 'industry', None) or ""
-        domains = self._get_domains_for_industry(industry)
+        if not domains:
+            domains.extend(self._discover_domains_from_icp(icp))
 
-        # Spread the limit evenly across domains (max 10 per domain on free plan)
-        per_domain = max(1, min(10, limit // len(domains)))
-        print(f"Hunter: searching {len(domains)} domains for industry='{industry}', {per_domain} leads/domain")
-
+        domains = [d for d in map(self._clean_domain, domains) if self._is_valid_domain(d)]
+        domains = list(dict.fromkeys(domains))
+        if not domains:
+            print("Hunter Strategy: no valid domains available from ICP/industry discovery")
+            return []
+        
         all_leads = []
+        seen_emails = set()
+        # Ensure we don't overfill from the first domain (e.g., only coursera.org)
+        per_domain_cap = max(1, math.ceil(limit / max(len(domains), 1)))
+
         for domain in domains:
             if len(all_leads) >= limit:
                 break
-            leads = self._search_domain(domain, per_domain)
-            all_leads.extend(leads)
-            print(f"  → {domain}: fetched {len(leads)} leads")
 
+            # Clean domain
+            clean_domain = self._clean_domain(domain)
+            remaining = limit - len(all_leads)
+            fetch_limit = min(per_domain_cap, remaining)
+            params = {"domain": clean_domain, "api_key": self._api_key, "limit": fetch_limit}
+            
+            try:
+                response = requests.get(self._url, params=params, timeout=15)
+                if response.status_code != 200:
+                    continue
+                
+                data = response.json().get("data", {})
+                emails = data.get("emails", [])
+                domain_added = 0
+                for person in emails:
+                    email = person.get("value")
+                    if email and email not in seen_emails:
+                        all_leads.append({
+                            "first_name": person.get("first_name") or "",
+                            "last_name": person.get("last_name") or "",
+                            "email": email,
+                            "company": data.get("organization") or clean_domain,
+                            "job_title": person.get("position") or "Employee",
+                            "linkedin": person.get("linkedin") or ""
+                        })
+                        seen_emails.add(email)
+                        domain_added += 1
+                    
+                    if len(all_leads) >= limit or domain_added >= per_domain_cap:
+                        break
+            except Exception as e:
+                print(f"Hunter Strategy Error for {clean_domain}: {e}")
+                
+        return all_leads[:limit]
+
+    @staticmethod
+    def _clean_domain(domain: str) -> str:
+        return str(domain).strip().replace("https://", "").replace("http://", "").split("/")[0].lower()
+
+    @staticmethod
+    def _is_valid_domain(domain: str) -> bool:
+        if not domain:
+            return False
+        pattern = r"^(?!-)[a-z0-9-]+(\.[a-z0-9-]+)+$"
+        return bool(re.match(pattern, domain))
+
+    @staticmethod
+    def _discover_domains_from_icp(icp) -> List[str]:
+        try:
+            from app.services.agent_utils import DomainDiscoverer
+            discoverer = DomainDiscoverer()
+            industry = getattr(icp, 'industry', '') or ''
+            location = getattr(icp, 'location', '') or ''
+            company_size = getattr(icp, 'company_size', '') or ''
+            job_titles = getattr(icp, 'job_titles', '') or ''
+            description = f"Industry: {industry}; Location: {location}; Company size: {company_size}; Roles: {job_titles}"
+            return discoverer.discover_domains(industry=industry, description=description)
+        except Exception as e:
+            print(f"Hunter Strategy domain discovery error: {e}")
+            return []
+
+class LinkedInLeadStrategy(LeadGenerationStrategy):
+    """Mock strategy for LinkedIn lead generation."""
+    def generate_leads(self, icp, limit: int = 50) -> List[Dict]:
+        return [{
+            "first_name": "Sample",
+            "last_name": "Lead",
+            "email": "sample@example.com",
+            "company": "Tech Corp",
+            "job_title": "CTO",
+            "linkedin": "https://linkedin.com/sample"
+        }]
+
+class CompositeLeadStrategy(LeadGenerationStrategy):
+    """
+    Composite strategy that aggregates leads from multiple sources.
+    DESIGN PATTERN: Composite
+    """
+    def __init__(self, strategies: List[LeadGenerationStrategy]):
+        self._strategies = strategies
+
+    def generate_leads(self, icp, limit: int = 50) -> List[Dict]:
+        all_leads = []
+        seen_emails = set()
+        
+        # Divide limit across strategies
+        limit_per_strat = limit // len(self._strategies) if self._strategies else limit
+        
+        for strategy in self._strategies:
+            leads = strategy.generate_leads(icp, limit_per_strat)
+            for lead in leads:
+                email = lead.get("email")
+                if email and email not in seen_emails:
+                    all_leads.append(lead)
+                    seen_emails.add(email)
+                
+                if len(all_leads) >= limit:
+                    break
+            
+            if len(all_leads) >= limit:
+                break
+                
         return all_leads[:limit]

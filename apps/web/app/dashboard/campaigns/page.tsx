@@ -14,9 +14,6 @@ interface Campaign {
   lead_limit: number;
   status: "active" | "paused" | "archived";
   has_icp: boolean;
-}
-
-interface CampaignWithLeads extends Campaign {
   lead_count: number;
 }
 
@@ -34,7 +31,7 @@ const DOT_STYLES: Record<string, string> = {
 };
 
 export default function CampaignsPage() {
-  const [campaigns, setCampaigns] = useState<CampaignWithLeads[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading]     = useState(true);
   const [tab, setTab]             = useState<TabType>("all");
 
@@ -44,18 +41,7 @@ export default function CampaignsPage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign/`, { cache: "no-store" });
         if (!res.ok) return;
         const data: Campaign[] = await res.json();
-        const withCounts = await Promise.all(
-          data.map(async (c) => {
-            try {
-              const lr = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign/${c.id}`, { cache: "no-store" });
-              const leads = lr.ok ? await lr.json() : [];
-              return { ...c, lead_count: leads.length };
-            } catch {
-              return { ...c, lead_count: 0 };
-            }
-          })
-        );
-        setCampaigns(withCounts);
+        setCampaigns(data);
       } finally {
         setLoading(false);
       }

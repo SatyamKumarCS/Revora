@@ -1,17 +1,18 @@
-import uuid
-from sqlalchemy import Column, String
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String
 from app.db.base import Base
 
 class Leads(Base):
+    """
+    Lead model representing a prospect captured in a campaign.
+    Standardized via Base inheritance and modern SQLAlchemy types.
+    """
     __tablename__ = "leads"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    campaign_id = Column(String)
-
-    first_name = Column(String)
-    last_name = Column(String)
-    email = Column(String)
-    company = Column(String)
-    job_title = Column(String)
-    linkedin = Column(String)
+    campaign_id: Mapped[str] = mapped_column(String)
+    first_name: Mapped[str] = mapped_column(String)
+    last_name: Mapped[str] = mapped_column(String)
+    email: Mapped[str] = mapped_column(String)
+    company: Mapped[str] = mapped_column(String)
+    job_title: Mapped[str] = mapped_column(String)
+    linkedin: Mapped[str] = mapped_column(String)

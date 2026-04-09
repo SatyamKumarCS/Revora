@@ -1,16 +1,18 @@
-import uuid
-from sqlalchemy import Column, String, Integer, JSON
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Integer, JSON
 from app.db.base import Base
 
 class Campaign(Base):
-    __tablename__="campaign"
+    """
+    Campaign model representing a marketing outreach effort.
+    Inherits structured audit fields from Base.
+    """
+    __tablename__ = "campaign"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    campaign_name = Column(String)
-    product_name = Column(String)
-    product_description = Column(String)
-    goal = Column(String)
-    lead_sources = Column(JSON, default=list)
-    lead_limit = Column(Integer)
-    status = Column(String, default="active")
+    campaign_name: Mapped[str] = mapped_column(String)
+    product_name: Mapped[str] = mapped_column(String)
+    product_description: Mapped[str] = mapped_column(String)
+    goal: Mapped[str] = mapped_column(String)
+    lead_sources: Mapped[list] = mapped_column(JSON, default=list)
+    lead_limit: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String, default="active")
