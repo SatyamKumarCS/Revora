@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const syne = Syne({ subsets: ["latin"], variable: "--font-syne" });
 
 export const metadata: Metadata = {
-  title: "Quantum Flow | Build, Run, Scale",
+  title: "Revora",
   description: "The smarter way to build, run, and scale your business.",
 };
 

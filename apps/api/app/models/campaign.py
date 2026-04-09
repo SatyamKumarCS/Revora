@@ -13,3 +13,4 @@ class Campaign(Base):
     goal = Column(String)
     lead_sources = Column(JSON, default=list)
     lead_limit = Column(Integer)
+    status = Column(String, default="active")

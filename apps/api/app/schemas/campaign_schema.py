@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Literal
 
 class CampaignCreate(BaseModel):
     campaign_name: str
@@ -9,6 +9,9 @@ class CampaignCreate(BaseModel):
     lead_sources: List[str]
     lead_limit: int
 
+class CampaignStatusUpdate(BaseModel):
+    status: Literal["active", "paused", "archived"]
+
 class CampaignResponse(BaseModel):
     id: str
     campaign_name: str
@@ -16,6 +19,7 @@ class CampaignResponse(BaseModel):
     goal: str
     lead_sources: List[str]
     lead_limit: int
+    status: str = "active"
 
     class Config:
         from_attributes = True
