@@ -37,9 +37,9 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Python
-venv/
-.venv/
-__pycache__/
+**/venv/
+**/.venv/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.egg-info/
@@ -62,9 +62,11 @@ pip-delete-this-directory.txt
 *.swp
 *.swo
 *~
+.gemini/
 
 # OS
 .DS_Store
+**/.DS_Store
 Thumbs.db
 
 # Misc
