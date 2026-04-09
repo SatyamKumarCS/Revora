@@ -67,9 +67,9 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen bg-[#050505] text-white selection:bg-[#5B6EFF]/30 overflow-hidden font-syne">
-      {/* Sidebar */}
-      <aside className="w-72 border-r border-white/5 bg-black/40 backdrop-blur-xl p-6 flex flex-col justify-between hidden lg:flex relative z-20">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-[#5B6EFF]/30 font-syne">
+      {/* Sidebar — fixed so the body can scroll freely */}
+      <aside className="fixed left-0 top-0 h-screen w-72 border-r border-white/5 bg-black/40 backdrop-blur-xl p-6 flex-col justify-between z-20 hidden lg:flex">
         <div className="space-y-10">
           <Link href="/" className="flex items-center gap-3 px-2">
             <div className="h-10 w-10 rounded-xl bg-[#5B6EFF] flex items-center justify-center shadow-[0_0_20px_rgba(91,110,255,0.4)]">
@@ -92,7 +92,7 @@ export default function DashboardLayout({
             <div className="flex items-center gap-3 mb-3">
               <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#5B6EFF] to-orange-400 p-px">
                 <div className="h-full w-full rounded-full bg-[#050505] flex items-center justify-center overflow-hidden">
-                   <Users className="h-5 w-5 text-white/40" />
+                  <Users className="h-5 w-5 text-white/40" />
                 </div>
               </div>
               <div className="overflow-hidden">
@@ -100,7 +100,7 @@ export default function DashboardLayout({
                 <p className="text-[10px] text-white/30 truncate">{user?.email || "offline"}</p>
               </div>
             </div>
-            <button 
+            <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300 text-xs font-black uppercase tracking-widest"
             >
@@ -111,18 +111,18 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 relative overflow-y-auto">
-        {/* Top Header Blur effect */}
-        <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black to-transparent z-10 pointer-events-none"></div>
-        
-        <div className="relative z-0 p-8 pt-12">
+      {/* Main Content — offset by sidebar width, body scrolls naturally */}
+      <main className="lg:ml-72 min-h-screen">
+        {/* Sticky top fade */}
+        <div className="sticky top-0 h-16 bg-gradient-to-b from-[#050505] to-transparent pointer-events-none z-10 -mb-16"></div>
+
+        <div className="p-8 pt-8 pb-16">
           {children}
         </div>
 
-        {/* Decorative Background Elements */}
+        {/* Decorative blobs — fixed so they don't affect scroll height */}
         <div className="fixed top-0 right-0 w-[800px] h-[800px] bg-[#5B6EFF]/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
-        <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-[#5B6EFF]/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+        <div className="fixed bottom-0 left-72 w-[400px] h-[400px] bg-[#5B6EFF]/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
       </main>
     </div>
   );
