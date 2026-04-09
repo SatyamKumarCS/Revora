@@ -13,6 +13,28 @@ interface TrailPoint {
   vy: number;
 }
 
+interface GradientUniforms {
+  [uniform: string]: THREE.IUniform<unknown>;
+  uTime: THREE.IUniform<number>;
+  uResolution: THREE.IUniform<THREE.Vector2>;
+  uColor1: THREE.IUniform<THREE.Vector3>;
+  uColor2: THREE.IUniform<THREE.Vector3>;
+  uColor3: THREE.IUniform<THREE.Vector3>;
+  uColor4: THREE.IUniform<THREE.Vector3>;
+  uColor5: THREE.IUniform<THREE.Vector3>;
+  uColor6: THREE.IUniform<THREE.Vector3>;
+  uSpeed: THREE.IUniform<number>;
+  uIntensity: THREE.IUniform<number>;
+  uTouchTexture: THREE.IUniform<THREE.Texture>;
+  uGrainIntensity: THREE.IUniform<number>;
+  uZoom: THREE.IUniform<number>;
+  uDarkNavy: THREE.IUniform<THREE.Vector3>;
+  uGradientSize: THREE.IUniform<number>;
+  uGradientCount: THREE.IUniform<number>;
+  uColor1Weight: THREE.IUniform<number>;
+  uColor2Weight: THREE.IUniform<number>;
+}
+
 class TouchTexture {
   size: number;
   width: number;
@@ -51,6 +73,7 @@ class TouchTexture {
     this.clear();
     for (let i = this.trail.length - 1; i >= 0; i--) {
       const point = this.trail[i];
+      if (!point) continue;
       const f = point.force * this.speed * (1 - point.age / this.maxAge);
       point.x += point.vx * f;
       point.y += point.vy * f;
@@ -120,7 +143,7 @@ class GradientBackground {
   getViewSize: () => { width: number; height: number };
   scene: THREE.Scene;
   mesh!: THREE.Mesh;
-  uniforms: Record<string, THREE.IUniform<unknown>>;
+  uniforms: GradientUniforms;
 
   constructor(
     scene: THREE.Scene,

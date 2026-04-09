@@ -79,7 +79,7 @@ export default function OutreachPage() {
           }),
         );
         setCampaigns(withLeads);
-        if (withLeads.length > 0) setSelected(withLeads[0]);
+        if (withLeads.length > 0) setSelected(withLeads[0] ?? null);
       } catch {
         console.error("Failed to load campaigns");
       } finally {
