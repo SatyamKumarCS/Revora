@@ -1,298 +1,272 @@
-import os
 import json
+import logging
+import os
+import re
+from dataclasses import dataclass
 from pathlib import Path
-from difflib import SequenceMatcher
-from typing import Dict, Optional, TypedDict, List
+from typing import Dict, Optional
+
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
-from langgraph.graph import StateGraph, END
+from langchain_openai import ChatOpenAI
 
-# Load env explicitly from apps/api/.env so key resolution is stable in all run modes
-ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
-load_dotenv(dotenv_path=ENV_PATH)
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / ".env")
 
-class EmailState(TypedDict):
-    """Internal state storage for the LangGraph workflow."""
+logger = logging.getLogger(__name__)
+
+_SYSTEM_PROMPT = "You are an expert SDR copywriter. Return only valid JSON with subject and body."
+
+
+@dataclass
+class EmailContext:
     campaign_info: Dict
-    icp_info: Optional[Dict]
-    lead_info: Optional[Dict]
-    tone: str
-    goal: str
-    value_props: str
-    subject_format: str
-    improve: bool
-    previous_subject: str
-    previous_body: str
-    draft: str
-    subject: str
-    feedback: str
-    open_rate: str
-    sentiment_score: str
-    iteration: int
+    icp_info: Dict
+    lead_info: Dict
+    tone: str = "Professional"
+    goal: str = ""
+    value_props: str = ""
+    subject_format: str = ""
+    sender_name: str = "Revora Team"
 
-class EmailGenerator:
-    """
-    Singleton service for generating hyper-personalized emails via OpenRouter.
-    Uses LangGraph to orchastrate a multi-step agentic drafting process.
-    """
-    _instance = None
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(EmailGenerator, cls).__new__(cls)
-            cls._instance._initialize()
-        return cls._instance
+class EmailParser:
+    """Responsible for extracting structured email data from raw LLM output."""
 
-    def _initialize(self):
-        """Standardizes LLM configuration and compiles the internal graph."""
-        self._api_key = os.getenv("OPENROUTER_API_KEY")
-        self._base_url = "https://openrouter.ai/api/v1"
-        self._model_name = os.getenv("LLM_MODEL", "anthropic/claude-3-haiku")
-        
-        self._llm = None
-        if self._api_key:
-            self._llm = ChatOpenAI(
-                api_key=self._api_key,
-                base_url=self._base_url,
-                model=self._model_name,
-                default_headers={
-                    "HTTP-Referer": "https://revora.ai",
-                    "X-Title": "Revora SDR Engine"
-                }
-            )
-        
-        self._graph = self._build_graph()
+    _STRIP_PREFIX = re.compile(r'^"?(subject|body)"?\s*:\s*"?', re.IGNORECASE)
+    _SUBJECT_PATTERN = re.compile(r'"subject"\s*:\s*"([^"]+)"', re.IGNORECASE)
+    _BODY_PATTERN = re.compile(r'"body"\s*:\s*"([\s\S]+?)"\s*[}\n]', re.IGNORECASE)
+    _SUBJECT_PLAIN = re.compile(r"(?im)^\s*subject\s*:\s*(.+)$")
+    _BODY_PLAIN = re.compile(r"(?is)\bbody\s*:\s*(.+)$")
 
-    def _build_graph(self):
-        """Constructs and compiles the StateGraph workflow."""
-        workflow = StateGraph(EmailState)
-        workflow.add_node("draft", self._draft_node)
-        workflow.add_node("review", self._review_node)
-        workflow.add_node("polish", self._polish_node)
-        workflow.add_node("score", self._score_node)
-        workflow.set_entry_point("draft")
-        workflow.add_edge("draft", "review")
-        workflow.add_edge("review", "polish")
-        workflow.add_edge("polish", "score")
-        workflow.add_edge("score", END)
-        return workflow.compile()
+    @classmethod
+    def parse(cls, raw: str) -> Dict:
+        text = (raw or "").strip()
+        text = cls._strip_markdown_fence(text)
 
-    # ── Internal Graph Nodes ──
-
-    def _draft_node(self, state: EmailState) -> EmailState:
-        if not self._llm: return state
-        lead = state.get('lead_info') or {}
-        context = f"TARGET: {lead.get('first_name')} at {lead.get('company')} ({lead.get('job_title')})"
-        improve_clause = ""
-        if state.get("improve") and (state.get("previous_body") or state.get("previous_subject")):
-            improve_clause = f"""
-            IMPROVEMENT MODE: You are generating version {state.get('iteration', 1)}.
-            PREVIOUS SUBJECT: {state.get('previous_subject', '')}
-            PREVIOUS BODY: {state.get('previous_body', '')}
-
-            Make this draft clearly better than the previous one:
-            - stronger hook in first line
-            - clearer and more specific CTA
-            - tighter wording (fewer filler words)
-            - improved personalization
-            - avoid reusing the same sentence structure
-            """
-        prompt = f"""
-        Draft a personalized outreach email.
-        {context}
-        PRODUCT: {state['campaign_info'].get('product_name')}
-        DESC: {state['campaign_info'].get('product_description')}
-        GOAL: {state['goal']}
-        TONE: {state['tone']}
-        SUBJECT FORMAT: {state['subject_format']}
-        VALUE_PROPS: {state['value_props']}
-        {improve_clause}
-        
-        Respond only in JSON with 'subject' and 'body'.
-        """
-        response = self._llm.invoke([
-            SystemMessage(content="Professional SDR writer."),
-            HumanMessage(content=prompt)
-        ])
         try:
-            data = self._extract_json_object(response.content)
-            state['subject'] = data.get('subject', '')
-            state['draft'] = data.get('body', '')
-        except:
-            state['draft'] = response.content
-        return state
-
-    def _review_node(self, state: EmailState) -> EmailState:
-        if not self._llm: return state
-        prompt = f"Review this draft for conversion: {state['draft']}"
-        response = self._llm.invoke([HumanMessage(content=prompt)])
-        state['feedback'] = response.content
-        return state
-
-    def _polish_node(self, state: EmailState) -> EmailState:
-        if not self._llm: return state
-        prompt = f"""
-        Final polish based on feedback.
-        FEEDBACK: {state['feedback']}
-        ORIGINAL: {state['draft']}
-
-        Return ONLY JSON with keys:
-        - subject
-        - body
-        """
-        response = self._llm.invoke([HumanMessage(content=prompt)])
-        try:
-            data = self._extract_json_object(response.content)
-            state['subject'] = data.get('subject', state['subject'])
-            state['draft'] = data.get('body', state['draft'])
-        except: pass
-        return state
-
-    def _score_node(self, state: EmailState) -> EmailState:
-        if not self._llm: return state
-        prompt = f"""
-        You are an email performance analyst.
-        Estimate performance for this outreach draft.
-
-        SUBJECT: {state.get('subject', '')}
-        BODY: {state.get('draft', '')}
-
-        Return ONLY JSON with exactly these keys:
-        - open_rate (example: "42%")
-        - sentiment_score (example: "8.7/10")
-
-        Do not include any extra keys or explanation.
-        """
-        response = self._llm.invoke([HumanMessage(content=prompt)])
-        try:
-            data = self._extract_json_object(response.content)
-            state['open_rate'] = self._first_non_empty(
-                data.get('open_rate'),
-                data.get('estimated_open_rate'),
-                data.get('openRate'),
-                state.get('open_rate'),
-                '45%'
-            )
-            state['sentiment_score'] = self._first_non_empty(
-                data.get('sentiment_score'),
-                data.get('sentiment'),
-                data.get('tone_score'),
-                state.get('sentiment_score'),
-                '9/10'
-            )
-        except:
-            state['open_rate'] = self._first_non_empty(state.get('open_rate'), '45%')
-            state['sentiment_score'] = self._first_non_empty(state.get('sentiment_score'), '9/10')
-        return state
-
-    @staticmethod
-    def _similarity(a: str, b: str) -> float:
-        if not a or not b:
-            return 0.0
-        return SequenceMatcher(None, a.strip().lower(), b.strip().lower()).ratio()
-
-    def _force_improved_rewrite(self, state: EmailState) -> EmailState:
-        if not self._llm:
-            return state
-        prompt = f"""
-        Rewrite this email to be a clearly improved next version.
-
-        PREVIOUS SUBJECT: {state.get('previous_subject', '')}
-        PREVIOUS BODY: {state.get('previous_body', '')}
-
-        CURRENT SUBJECT: {state.get('subject', '')}
-        CURRENT BODY: {state.get('draft', '')}
-
-        Requirements:
-        - keep same intent, but make wording noticeably different
-        - stronger opening line and CTA
-        - concise and personalized
-
-        Return ONLY JSON with keys: subject, body
-        """
-        try:
-            response = self._llm.invoke([HumanMessage(content=prompt)])
-            data = self._extract_json_object(response.content)
-            state['subject'] = self._first_non_empty(data.get('subject'), state.get('subject'))
-            state['draft'] = self._first_non_empty(data.get('body'), state.get('draft'))
+            return json.loads(text)
         except Exception:
             pass
-        return state
+
+        result = cls._try_extract_json_block(text) or cls._try_regex_json(text) or cls._try_regex_plain(text)
+        if result:
+            return result
+
+        return cls._plain_text_fallback(text)
 
     @staticmethod
-    def _extract_json_object(raw: str) -> Dict:
-        text = (raw or "").strip()
+    def _strip_markdown_fence(text: str) -> str:
         if text.startswith("```"):
             parts = text.split("```")
             if len(parts) >= 2:
-                text = parts[1].strip()
-                if text.lower().startswith("json"):
-                    text = text[4:].strip()
-        return json.loads(text)
+                inner = parts[1].strip()
+                return inner[4:].strip() if inner.lower().startswith("json") else inner
+        return text
 
     @staticmethod
-    def _first_non_empty(*values: Optional[str]) -> str:
-        for value in values:
-            if isinstance(value, str) and value.strip():
-                return value.strip()
-        return ""
+    def _try_extract_json_block(text: str) -> Optional[Dict]:
+        s, e = text.find("{"), text.rfind("}")
+        if s != -1 and e > s:
+            try:
+                return json.loads(text[s : e + 1])
+            except Exception:
+                pass
+        return None
 
-    # ── Public Interface ──
+    @classmethod
+    def _try_regex_json(cls, text: str) -> Optional[Dict]:
+        sm = cls._SUBJECT_PATTERN.search(text)
+        bm = cls._BODY_PATTERN.search(text)
+        if sm and bm:
+            return {"subject": sm.group(1).strip(), "body": bm.group(1).strip()}
+        return None
+
+    @classmethod
+    def _try_regex_plain(cls, text: str) -> Optional[Dict]:
+        sm = cls._SUBJECT_PLAIN.search(text)
+        bm = cls._BODY_PLAIN.search(text)
+        if sm and bm:
+            return {"subject": sm.group(1).strip(), "body": bm.group(1).strip()}
+        return None
+
+    @classmethod
+    def _plain_text_fallback(cls, text: str) -> Dict:
+        if not text:
+            raise ValueError("LLM response is empty")
+        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        lines = [ln for ln in lines if ln not in {"{", "}"}]
+        if len(lines) >= 2:
+            return {"subject": lines[0][:120].lstrip('"').rstrip('",'), "body": "\n".join(lines[1:]).strip()}
+        return {"subject": "Quick idea", "body": text}
+
+
+class EmailFormatter:
+    """Responsible for cleaning and formatting parsed email fields."""
+
+    _STRIP_KEY_PREFIX = re.compile(r'^"?(subject|body)"?\s*:\s*"?', re.IGNORECASE)
+    _NAME_PLACEHOLDERS = ("[Your Name]", "<Your Name>", "{{name}}")
+
+    @classmethod
+    def clean(cls, value: str, sender_name: str) -> str:
+        text = (value or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+        text = cls._STRIP_KEY_PREFIX.sub("", text).strip().strip('"')
+        for placeholder in cls._NAME_PLACEHOLDERS:
+            text = text.replace(placeholder, sender_name)
+        return text
+
+    @classmethod
+    def format(cls, subject: str, body: str, sender_name: str) -> Dict:
+        clean_subject = cls.clean(subject, sender_name)
+        clean_body = cls.clean(body, sender_name)
+        clean_body = cls._normalize_paragraphs(clean_body)
+        clean_body = cls._ensure_signature(clean_body, sender_name)
+        return {"subject": clean_subject, "body": clean_body}
+
+    @staticmethod
+    def _normalize_paragraphs(body: str) -> str:
+        # Force newline after greeting: "Hi Name," -> "Hi Name,\n"
+        body = re.sub(r"(Hi\s+\w+,)\s*", r"\1\n", body, count=1)
+
+        # Force newline before "Thanks," signature block
+        body = re.sub(r"\s*(Thanks,)\s*", r"\n\nThanks,\n", body, flags=re.IGNORECASE)
+
+        lines = [line.strip() for line in body.split("\n") if line.strip()]
+
+        if len(lines) < 2:
+            return body
+
+        # Separate greeting, body content, and signature
+        greeting = lines[0] if re.match(r"^Hi\s+\w+,", lines[0], re.IGNORECASE) else None
+        sig_start = next((i for i, l in enumerate(lines) if l.lower().startswith("thanks,")), None)
+
+        body_lines = lines[1:sig_start] if greeting and sig_start else lines
+        sig_lines = lines[sig_start:] if sig_start else []
+
+        # Auto-split body content into paragraphs if it's one run-on block
+        body_text = " ".join(body_lines)
+        sentences = [s.strip() for s in re.split(r"(?<=[.?!])\s+", body_text) if s.strip()]
+
+        if len(sentences) >= 4:
+            mid = len(sentences) // 2
+            para1 = " ".join(sentences[:mid])
+            para2 = " ".join(sentences[mid:])
+            body_text = f"{para1}\n\n{para2}"
+        else:
+            body_text = " ".join(sentences)
+
+        parts = []
+        if greeting:
+            parts.append(greeting)
+        parts.append(body_text)
+        if sig_lines:
+            parts.append("\n".join(sig_lines))
+
+        return "\n\n".join(parts)
+
+    @staticmethod
+    def _ensure_signature(body: str, sender_name: str) -> str:
+        lower = body.lower()
+        if "thanks," not in lower:
+            return body.rstrip() + f"\n\nThanks,\n{sender_name}"
+        if sender_name.lower() not in lower:
+            return body.rstrip() + f"\n{sender_name}"
+        return body
+
+
+class EmailGenerator:
+    """Orchestrates LLM-based personalized cold email generation."""
+
+    def __init__(self):
+        api_key = os.getenv("GROQ_API_KEY", "").strip()
+        if not api_key:
+            raise EnvironmentError("GROQ_API_KEY is not set.")
+
+        self._llm = ChatOpenAI(
+            api_key=api_key,
+            base_url=os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1").strip().rstrip("/"),
+            model=os.getenv("LLM_MODEL", "llama-3.3-70b-versatile").strip(),
+        )
+        self._parser = EmailParser()
+        self._formatter = EmailFormatter()
 
     def generate_personalized_email(
-        self, 
-        campaign_info: Dict, 
-        icp_info: Optional[Dict], 
+        self,
+        campaign_info: Dict,
+        icp_info: Optional[Dict] = None,
         lead_info: Optional[Dict] = None,
         tone: str = "Professional",
         goal: str = "",
         value_props: str = "",
         subject_format: str = "",
-        improve: bool = False,
-        iteration: int = 1,
-        previous_subject: str = "",
-        previous_body: str = "",
+        sender_name: str = "Revora Team",
+        **_kwargs,
     ) -> Dict:
-        """Main entry point to trigger the agentic generation graph."""
-        if not self._llm:
-            return self._generate_fallback(campaign_info, goal, tone, lead_info, subject_format)
+        context = EmailContext(
+            campaign_info=campaign_info,
+            icp_info=icp_info or {},
+            lead_info=lead_info or {},
+            tone=tone,
+            goal=goal,
+            value_props=value_props,
+            subject_format=subject_format,
+            sender_name=sender_name,
+        )
+        return self._generate(context)
 
-        initial_state: EmailState = {
-            "campaign_info": campaign_info,
-            "icp_info": icp_info,
-            "lead_info": lead_info,
-            "tone": tone,
-            "goal": goal or campaign_info.get("goal", ""),
-            "value_props": value_props,
-            "subject_format": subject_format,
-            "improve": improve,
-            "previous_subject": previous_subject,
-            "previous_body": previous_body,
-            "draft": "", "subject": "", "feedback": "", "open_rate": "", "sentiment_score": "", "iteration": iteration
-        }
-
+    def _generate(self, ctx: EmailContext) -> Dict:
         try:
-            final_state = self._graph.invoke(initial_state)
-
-            if improve and previous_body:
-                body_similarity = self._similarity(previous_body, final_state.get("draft", ""))
-                subject_similarity = self._similarity(previous_subject, final_state.get("subject", "")) if previous_subject else 0.0
-                if body_similarity >= 0.88 and subject_similarity >= 0.80:
-                    final_state = self._force_improved_rewrite(final_state)
-
-            return {
-                "subject": self._first_non_empty(final_state.get("subject"), "Quick question"),
-                "body": self._first_non_empty(final_state.get("draft"), "Hi there,"),
-                "open_rate": self._first_non_empty(final_state.get("open_rate"), "35%"),
-                "sentiment_score": self._first_non_empty(final_state.get("sentiment_score"), "8.0/10")
-            }
+            prompt = self._build_prompt(ctx)
+            raw = self._llm.invoke([
+                SystemMessage(content=_SYSTEM_PROMPT),
+                HumanMessage(content=prompt),
+            ]).content
+            data = EmailParser.parse(raw)
+            result = EmailFormatter.format(
+                subject=(data.get("subject") or "").strip(),
+                body=(data.get("body") or "").strip(),
+                sender_name=ctx.sender_name,
+            )
+            if not result.get("subject") or not result.get("body"):
+                raise ValueError("Missing subject or body in LLM response")
+            return result
         except Exception:
-            return self._generate_fallback(campaign_info, goal, tone, lead_info, subject_format)
+            logger.exception("Email generation failed")
+            return {"error": "Email generation failed. Please try again."}
 
-    def _generate_fallback(self, campaign: Dict, goal: str, tone: str, lead: Optional[Dict], subject_format: str) -> Dict:
-        name = lead.get('first_name', 'there') if lead else 'there'
-        company = lead.get('company', 'your company') if lead else 'your company'
-        subject = subject_format.replace("{{company_name}}", company) if subject_format else f"Quick question for {company}"
-        body = f"Hi {name},\n\nI noticed {company} is doing great work. We'd love to help with {goal}."
-        return {"subject": subject, "body": body, "open_rate": "30%", "sentiment_score": "7/10"}
+    @staticmethod
+    def _build_prompt(ctx: EmailContext) -> str:
+        lead = ctx.lead_info
+        icp = ctx.icp_info
+        first_name = lead.get("first_name") or "there"
+        company = lead.get("company") or "your company"
+        job_title = lead.get("job_title") or "your role"
+
+        return f"""
+        You are an elite B2B sales copywriter. Write one short, sharp, high-converting cold outreach email.
+
+        === CONTEXT ===
+        Recipient: {first_name}, {job_title} at {company}
+        Industry: {icp.get('industry', '')}
+        Our product: {ctx.campaign_info.get('product_name', '')}
+        What it does: {ctx.campaign_info.get('product_description', '')}
+        Goal of outreach: {ctx.goal or ctx.campaign_info.get('goal', '')}
+        Tone: {ctx.tone}
+        Subject format hint: {ctx.subject_format or 'None — be creative and specific'}
+        Key value propositions: {ctx.value_props or 'derive from product description'}
+
+        === RULES ===
+        - The body MUST open with exactly: Hi {first_name},
+        - Write 100-150 words total. Every sentence must earn its place.
+        - Be specific. Reference {company} and {job_title} naturally — not generically.
+        - The opener should show you understand their world (challenges, priorities, pressures of their role).
+        - The value prop should feel like a direct solution to a real pain point — not a product pitch.
+        - CTA must be low-friction: one question asking for 15 minutes, nothing more.
+        - Sound like a smart human, not a sales bot. Avoid corporate filler like "I hope this finds you well", "I wanted to reach out", "leverage", "synergy", "streamline processes".
+        - No markdown, no bullets, no emojis, no placeholders.
+        - End with exactly:
+          Thanks,
+          {ctx.sender_name}
+
+        Return only valid JSON:
+        {{"subject": "...", "body": "..."}}
+        """

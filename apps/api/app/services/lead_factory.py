@@ -1,43 +1,30 @@
-from typing import Optional, List
+from typing import List
+
 from app.services.lead_generation_strategy import (
-    LeadGenerationStrategy,
     ApolloLeadStrategy,
-    LinkedInLeadStrategy,
+    CompositeLeadStrategy,
     HunterLeadStrategy,
-    CompositeLeadStrategy
+    LeadGenerationStrategy,
+    LinkedInLeadStrategy,
 )
 
+_STRATEGY_MAP = {
+    "apollo": ApolloLeadStrategy,
+    "hunter": HunterLeadStrategy,
+    "linkedin": LinkedInLeadStrategy,
+}
+
+
 class LeadGeneratorFactory:
-    """
-    Factory for retrieving lead generation strategies.
-    DESIGN PATTERN: Factory
-    """
-    
+    """Factory for composing lead generation strategies (Factory Pattern)."""
+
     @staticmethod
-    def get_strategy(source_name: str) -> Optional[LeadGenerationStrategy]:
-        """Returns a single strategy based on name."""
-        name = source_name.lower().strip()
-        normalized = name.replace(".io", "")
-        
-        if normalized == "apollo":
-            return ApolloLeadStrategy()
-        elif normalized == "linkedin":
-            return LinkedInLeadStrategy()
-        elif normalized == "hunter":
-            return HunterLeadStrategy()
-        return None
+    def get_strategy(source: str) -> LeadGenerationStrategy:
+        key = source.lower().strip().replace(".io", "")
+        cls = _STRATEGY_MAP.get(key)
+        return cls() if cls else HunterLeadStrategy()
 
     @staticmethod
     def get_composite_strategy(sources: List[str]) -> LeadGenerationStrategy:
-        """Returns a Composite strategy combining multiple sources."""
-        strategies = []
-        for src in sources:
-            strat = LeadGeneratorFactory.get_strategy(src)
-            if strat:
-                strategies.append(strat)
-        
-        # Default to Hunter if none found or explicit
-        if not strategies:
-            strategies = [HunterLeadStrategy()]
-            
-        return CompositeLeadStrategy(strategies)
+        strategies = [LeadGeneratorFactory.get_strategy(s) for s in sources]
+        return CompositeLeadStrategy(strategies or [HunterLeadStrategy()])

@@ -147,7 +147,6 @@ export default function OutreachPage() {
   };
 
   const handleGenerate = () => callGenerateAPI(true);
-  const handleRegenerate = () => callGenerateAPI(false);
 
   const handleCopy = () => {
     if (!draft) return;
@@ -354,26 +353,6 @@ export default function OutreachPage() {
               )}
             </button>
           </div>
-
-          {/* Stats strip — from API */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-[#111] border border-white/[0.06] p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 mb-1">
-                Open Rate Est.
-              </p>
-              <p className="text-2xl font-black text-[#f05a28]">
-                {draft?.open_rate?.trim() || "—"}
-              </p>
-            </div>
-            <div className="rounded-xl bg-[#111] border border-white/[0.06] p-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30 mb-1">
-                Sentiment Score
-              </p>
-              <p className="text-2xl font-black text-[#f05a28]">
-                {draft?.sentiment_score?.trim() || "—"}
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* ── RIGHT: Draft panel ── */}
@@ -465,13 +444,6 @@ export default function OutreachPage() {
           {/* Footer actions */}
           {draft && !generating && (
             <div className="flex items-center gap-2 px-5 py-4 border-t border-white/[0.06] bg-white/[0.01] flex-wrap">
-              <button
-                onClick={handleRegenerate}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white/50 hover:text-white text-xs font-bold transition-colors"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                Re-generate
-              </button>
               <button
                 onClick={handleCopy}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.08] text-white text-xs font-bold hover:bg-white/10 transition-colors"

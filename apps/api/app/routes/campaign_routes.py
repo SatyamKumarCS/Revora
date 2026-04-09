@@ -85,6 +85,7 @@ class EmailGenerateRequest(PydanticBase):
     iteration: int = 1
     previous_subject: str = ""
     previous_body: str = ""
+    sender_name: str = "Revora Team"
 
 @router.post("/{campaign_id}/generate-email")
 def generate_email(campaign_id: str, data: EmailGenerateRequest, db: Session = Depends(get_db)):
@@ -117,4 +118,5 @@ def generate_email(campaign_id: str, data: EmailGenerateRequest, db: Session = D
         iteration=data.iteration,
         previous_subject=data.previous_subject,
         previous_body=data.previous_body,
+        sender_name=data.sender_name,
     )
