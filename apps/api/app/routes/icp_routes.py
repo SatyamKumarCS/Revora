@@ -24,7 +24,8 @@ def create_icp(data: ICPCreate, db: Session = Depends(get_db)):
         industry=data.industry,
         location=data.location,
         company_size=data.company_size,
-        job_titles=data.job_titles
+        job_titles=data.job_titles,
+        target_domain=data.target_domain
     )
 
     db.add(icp)

@@ -13,3 +13,4 @@ class ICP(Base):
     location = Column(String)
     company_size = Column(String)
     job_titles = Column(String)
+    target_domain = Column(String, nullable=True)

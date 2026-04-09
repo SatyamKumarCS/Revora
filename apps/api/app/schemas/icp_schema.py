@@ -6,6 +6,7 @@ class ICPCreate(BaseModel):
     location: str
     company_size: str
     job_titles: str
+    target_domain: str | None = None
 
 class ICPResponse(BaseModel):
     id: str
@@ -14,6 +15,7 @@ class ICPResponse(BaseModel):
     location: str
     company_size: str
     job_titles: str
+    target_domain: str | None = None
 
     class Config:
         from_attributes = True
