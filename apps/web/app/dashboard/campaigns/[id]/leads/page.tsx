@@ -3,6 +3,7 @@
 import { useEffect, useState, use, useRef } from "react";
 import { ArrowLeft, Download, RefreshCw, Mail, Linkedin, Briefcase, Building2, User, Check, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import Boneyard from "../../../../../components/Boneyard";
 
 interface Lead {
   id: string;
@@ -215,10 +216,7 @@ export default function LeadsResultPage({ params }: { params: Promise<{ id: stri
 
       {/* ── Content ── */}
       {loading ? (
-        <div className="rounded-2xl bg-[#111] border border-white/[0.06] py-24 flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-[#f05a28]" />
-          <p className="text-white/30 text-sm font-bold">Fetching leads…</p>
-        </div>
+        <Boneyard cards={3} lines={6} />
       ) : leads.length === 0 ? (
         <div className="rounded-2xl bg-[#111] border border-white/[0.06] py-24 flex flex-col items-center gap-3 text-center px-6">
           <div className="h-12 w-12 rounded-2xl bg-[#f05a28]/10 border border-[#f05a28]/20 flex items-center justify-center mb-2">

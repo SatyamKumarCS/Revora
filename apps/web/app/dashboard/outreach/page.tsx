@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Sparkles, ChevronDown, Copy, Trash2, RefreshCw, Send, CheckCheck } from "lucide-react";
+import Boneyard from "../../../components/Boneyard";
 
 interface Campaign {
   id: string;
@@ -35,6 +36,7 @@ export default function OutreachPage() {
   const [copied, setCopied]                 = useState(false);
   const [draftVersion, setDraftVersion]     = useState(1);
   const [error, setError]                   = useState<string | null>(null);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
 
   /* ── load campaigns with ICP ── */
   useEffect(() => {
@@ -58,9 +60,30 @@ export default function OutreachPage() {
         setCampaigns(withLeads);
         if (withLeads.length > 0) setSelected(withLeads[0]);
       } catch {}
+      finally {
+        setLoadingCampaigns(false);
+      }
     };
     load();
   }, []);
+
+  if (loadingCampaigns) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-500 font-syne min-h-full">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-white">Email Generator</h1>
+            <span className="px-2 py-0.5 rounded-md bg-[#f05a28]/15 text-[#f05a28] text-[10px] font-black uppercase tracking-widest border border-[#f05a28]/20">
+              AI Beta
+            </span>
+          </div>
+          <p className="text-xs text-white/30 mt-0.5">Generate personalised outreach emails powered by your campaign data and ICP filters.</p>
+        </div>
+
+        <Boneyard cards={2} lines={6} />
+      </div>
+    );
+  }
 
   /* ── call backend generate-email endpoint ── */
   const callGenerateAPI = async (resetVersion = false) => {

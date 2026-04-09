@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Users, Megaphone, Target, Zap, TrendingUp, ChevronRight, BarChart3, AlertCircle, Lightbulb, FileText } from "lucide-react";
 import Link from "next/link";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import Boneyard from "../../components/Boneyard";
 
 interface Campaign {
   id: string;
@@ -68,6 +69,21 @@ export default function DashboardOverview() {
     { label: "Lead Target", value: loading ? "—" : totalTarget.toLocaleString(), icon: TrendingUp, sub: "across all campaigns" },
     { label: "Quality Score", value: loading ? "—" : `${qualityPct}%`, icon: Zap, sub: "leads generated vs target" },
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="flex items-end justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Dashboard Overview</h1>
+            <p className="text-sm text-white/40 mt-0.5">Real-time performance tracking for Revora Growth Engine</p>
+          </div>
+        </div>
+        <Boneyard cards={5} lines={4} />
+        <Boneyard cards={2} lines={5} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">

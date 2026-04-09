@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Boneyard from "../../../components/Boneyard";
 
 interface Campaign {
   id: string;
@@ -89,8 +90,9 @@ export default function CampaignsPage() {
 
       {/* Campaign Cards */}
       {loading ? (
-        <div className="flex justify-center items-center py-24">
-          <div className="h-7 w-7 animate-spin rounded-full border-2 border-white/10 border-t-[#f05a28]" />
+        <div className="space-y-4">
+          <Boneyard cards={2} lines={4} />
+          <Boneyard cards={2} lines={4} />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 text-white/30 text-sm">
