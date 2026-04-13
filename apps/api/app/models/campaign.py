@@ -16,3 +16,4 @@ class Campaign(Base):
     lead_sources: Mapped[list] = mapped_column(JSON, default=list)
     lead_limit: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String, default="active")
+    user_id: Mapped[str] = mapped_column(String, index=True, nullable=True)

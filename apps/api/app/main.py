@@ -11,6 +11,7 @@ from app.models import user
 from app.routes import campaign_routes
 from app.routes import icp_routes
 from app.routes import lead_routes
+from app.routes import gmail_routes
 
 ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
 load_dotenv(dotenv_path=ENV_PATH)
@@ -44,6 +45,7 @@ app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(campaign_routes.router)
 app.include_router(icp_routes.router)
 app.include_router(lead_routes.router)
+app.include_router(gmail_routes.router)
 
 @app.get("/")
 def root():

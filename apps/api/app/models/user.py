@@ -13,3 +13,8 @@ class User(Base):
     company_name = Column(String)
     role = Column(String)
     
+    # Gmail Integration
+    google_access_token = Column(String, nullable=True)
+    google_refresh_token = Column(String, nullable=True)
+    token_expiry = Column(String, nullable=True)
+    connected_email = Column(String, nullable=True)

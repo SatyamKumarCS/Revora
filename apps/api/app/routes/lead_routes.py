@@ -6,6 +6,8 @@ from app.models.campaign import Campaign
 from app.models.icp_filter import ICP
 from app.models.leads import Leads as Lead
 from app.services.lead_factory import LeadGeneratorFactory
+from app.core.dependencies import get_current_user
+from app.models.user import User
 
 router = APIRouter(prefix="/campaign", tags=["Leads"])
 
@@ -70,9 +72,9 @@ def process_leads_background(campaign_id: str):
         db.close()
 
 @router.post("/{campaign_id}/generate-leads")
-def generate_leads(campaign_id: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def generate_leads(campaign_id: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Initiates an asynchronous lead generation task for a campaign."""
-    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.id == campaign_id, Campaign.user_id == str(current_user.id)).first()
     if not campaign:
         return {"error": "Campaign not found"}
 
@@ -80,6 +82,27 @@ def generate_leads(campaign_id: str, background_tasks: BackgroundTasks, db: Sess
     return {"message": "Generation started", "status": "processing"}
 
 @router.get("/{campaign_id}/leads")
-def get_leads(campaign_id: str, db: Session = Depends(get_db)):
-    """Fetches all leads currently stored for a specific campaign."""
-    return db.query(Lead).filter(Lead.campaign_id == campaign_id).all()
+def get_leads(campaign_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Fetches all leads currently stored for a specific campaign securely."""
+    return db.query(Lead).join(Campaign).filter(Lead.campaign_id == campaign_id, Campaign.user_id == str(current_user.id)).all()
+
+@router.get("/all-leads")
+def get_all_leads(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Fetches all leads across all campaigns owned by the requesting user."""
+    # Importing Campaign locally to avoid circular imports if any, though it's at the top.
+    from app.models.campaign import Campaign
+    results = db.query(Lead, Campaign.campaign_name).outerjoin(Campaign, Lead.campaign_id == Campaign.id).filter(Campaign.user_id == str(current_user.id)).all()
+    
+    return [
+        {
+            "id": lead.id,
+            "campaign_id": lead.campaign_id,
+            "campaign": campaign_name or "Unknown Campaign",
+            "name": f"{lead.first_name} {lead.last_name}".strip() or "Unnamed Lead",
+            "email": lead.email,
+            "company": lead.company,
+            "job_title": lead.job_title,
+            "linkedin": lead.linkedin
+        }
+        for lead, campaign_name in results
+    ]

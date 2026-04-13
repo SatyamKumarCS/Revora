@@ -9,6 +9,8 @@ from app.models.icp_filter import ICP
 from app.models.leads import Leads
 from app.schemas.campaign_schema import CampaignCreate, CampaignStatusUpdate
 from app.services.email_generator import EmailGenerator
+from app.core.dependencies import get_current_user
+from app.models.user import User
 
 # Initialize modern singleton service
 email_gen = EmailGenerator()
@@ -23,8 +25,8 @@ def get_db():
         db.close()
 
 @router.post("/create")
-def create_campaign(data: CampaignCreate, db: Session = Depends(get_db)):
-    """Creates a new outreach campaign with initial settings."""
+def create_campaign(data: CampaignCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Creates a new outreach campaign with initial settings restricted to current user."""
     campaign = Campaign(
         campaign_name=data.campaign_name,
         product_name=data.product_name,
@@ -32,7 +34,8 @@ def create_campaign(data: CampaignCreate, db: Session = Depends(get_db)):
         goal=data.goal,
         lead_sources=data.lead_sources,
         lead_limit=data.lead_limit,
-        status="active"
+        status="active",
+        user_id=str(current_user.id)
     )
     db.add(campaign)
     db.commit()
@@ -40,9 +43,9 @@ def create_campaign(data: CampaignCreate, db: Session = Depends(get_db)):
     return {"message": "Campaign created", "id": campaign.id, "campaign_id": campaign.id}
 
 @router.patch("/{campaign_id}/status")
-def update_campaign_status(campaign_id: str, data: CampaignStatusUpdate, db: Session = Depends(get_db)):
-    """Updates the operational status of an existing campaign."""
-    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+def update_campaign_status(campaign_id: str, data: CampaignStatusUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Updates the operational status of an existing campaign securely."""
+    campaign = db.query(Campaign).filter(Campaign.id == campaign_id, Campaign.user_id == str(current_user.id)).first()
     if not campaign:
         return {"error": "Campaign not found"}
     campaign.status = data.status
@@ -50,9 +53,9 @@ def update_campaign_status(campaign_id: str, data: CampaignStatusUpdate, db: Ses
     return {"message": "Status updated", "status": campaign.status}
 
 @router.get("/")
-def get_campaigns(db: Session = Depends(get_db)):
-    """Retrieves all campaigns with high-level ICP status."""
-    campaigns = db.query(Campaign).all()
+def get_campaigns(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Retrieves all connected campaigns securely mapped to the requesting agent via JWT."""
+    campaigns = db.query(Campaign).filter(Campaign.user_id == str(current_user.id)).all()
     icp_ids = {icp.campaign_id for icp in db.query(ICP.campaign_id).all()}
     lead_counts = {
         campaign_id: count
@@ -88,9 +91,9 @@ class EmailGenerateRequest(PydanticBase):
     sender_name: str = "Revora Team"
 
 @router.post("/{campaign_id}/generate-email")
-def generate_email(campaign_id: str, data: EmailGenerateRequest, db: Session = Depends(get_db)):
+def generate_email(campaign_id: str, data: EmailGenerateRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Triggers the agentic generation flow for a campaign's personalized email."""
-    campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.id == campaign_id, Campaign.user_id == str(current_user.id)).first()
     if not campaign:
         return {"error": "Campaign not found"}
 
