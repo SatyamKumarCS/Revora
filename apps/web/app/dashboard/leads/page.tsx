@@ -12,11 +12,26 @@ import {
   ChevronRight,
   ArrowRight,
   Mail,
-  X
+  X,
 } from "lucide-react";
 
+export interface Lead {
+  id: string;
+  campaign_id: string;
+  campaign: string;
+  name: string;
+  email: string;
+  company: string;
+  job_title: string;
+  linkedin: string;
+  status?: string;
+  score?: number;
+  avatar?: string;
+  avatarBg?: string;
+}
+
 export default function LeadsPage() {
-  const [leads, setLeads] = useState<any[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Gmail & Modal State
@@ -40,7 +55,7 @@ export default function LeadsPage() {
       .then(res => res.json())
       .then(data => {
         if (!Array.isArray(data)) return;
-        const mappedLeads = data.map((lead: any, index: number) => ({
+        const mappedLeads = data.map((lead: Lead, index: number) => ({
           ...lead,
           status: ["REPLIED", "CONTACTED", "HOT LEAD", "NOT INTERESTED"][index % 4],
           score: Math.floor(Math.random() * 50) + 45,
@@ -56,7 +71,7 @@ export default function LeadsPage() {
       });
   }, []);
 
-  const uniqueCampaigns = Array.from(new Map(leads.map((lead: any) => [lead.campaign_id, { id: lead.campaign_id, name: lead.campaign }])).values());
+  const uniqueCampaigns = Array.from(new Map(leads.map((lead: Lead) => [lead.campaign_id, { id: lead.campaign_id, name: lead.campaign }])).values());
 
   const handleSendEmails = async () => {
     if (!selectedCampaignId) return alert("Select a campaign first");
@@ -72,18 +87,23 @@ export default function LeadsPage() {
       if (!res.ok) throw new Error(data.detail || "Failed to send");
       alert(`Successfully sent ${data.sent} emails!`);
       setIsModalOpen(false);
-    } catch (err: any) {
-      alert("Error: " + err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert("Error: " + err.message);
+      } else {
+        alert("Error: " + String(err));
+      }
     } finally {
       setIsSending(false);
     }
   };
   const campaignStats = Object.values(leads.reduce((acc, lead) => {
-    acc[lead.campaign] = acc[lead.campaign] || { campaign: lead.campaign, count: 0 };
-    acc[lead.campaign].count += 1;
+    const stat = acc[lead.campaign] || { campaign: lead.campaign, count: 0 };
+    stat.count += 1;
+    acc[lead.campaign] = stat;
     return acc;
   }, {} as Record<string, {campaign: string, count: number}>));
-  const maxLeads = Math.max(...campaignStats.map((c: any) => c.count), 1);
+  const maxLeads = Math.max(...campaignStats.map((c: {campaign: string, count: number}) => c.count), 1);
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-12">
@@ -249,7 +269,7 @@ export default function LeadsPage() {
           </div>
           
           <div className="h-40 flex items-end justify-center gap-3 px-2 z-10 relative">
-            {campaignStats.length > 0 ? campaignStats.map((stat: any, i) => {
+            {campaignStats.length > 0 ? campaignStats.map((stat: {campaign: string, count: number}, i) => {
               const height = Math.max((stat.count / maxLeads) * 100, 5); // At least 5% height
               const isBest = stat.count === maxLeads && maxLeads > 0;
               return (
@@ -283,7 +303,7 @@ export default function LeadsPage() {
             <div className="p-6 border-b border-white/10 flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold">Deploy Campaign Emails</h3>
-                <p className="text-white/40 text-sm mt-1">Design your custom email blast. Use <code className="text-[#f05a28] bg-white/5 px-1 rounded">{{name}}</code> and <code className="text-[#f05a28] bg-white/5 px-1 rounded">{{company}}</code> as dynamic variables.</p>
+                <p className="text-white/40 text-sm mt-1">Design your custom email blast. Use <code className="text-[#f05a28] bg-white/5 px-1 rounded">{"{{name}}"}</code> and <code className="text-[#f05a28] bg-white/5 px-1 rounded">{"{{company}}"}</code> as dynamic variables.</p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="text-white/40 hover:text-white transition-colors">
                 <X className="h-6 w-6" />
@@ -299,7 +319,7 @@ export default function LeadsPage() {
                   className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f05a28]/50 cursor-pointer"
                 >
                   <option value="" disabled>-- Choose a Campaign --</option>
-                  {uniqueCampaigns.map((camp: any) => (
+                  {uniqueCampaigns.map((camp: {id: string, name: string}) => (
                     <option key={camp.id} value={camp.id}>{camp.name}</option>
                   ))}
                 </select>
