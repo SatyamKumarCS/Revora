@@ -1,4 +1,6 @@
 "use client";
+import { authFetch } from "@/utils/api";
+
 
 import { useEffect, useState } from "react";
 import { Plus, ChevronRight } from "lucide-react";
@@ -39,7 +41,7 @@ export default function CampaignsPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(
+        const res = await authFetch(
           `${process.env.NEXT_PUBLIC_API_URL}/campaign/`,
           { cache: "no-store" },
         );

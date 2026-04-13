@@ -1,4 +1,6 @@
 "use client";
+import { authFetch } from "@/utils/api";
+
 
 import { useState, FormEvent, MouseEvent } from "react";
 import {
@@ -49,7 +51,7 @@ export default function NewCampaignPage() {
     setError("");
 
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/campaign/create`,
         {
           method: "POST",

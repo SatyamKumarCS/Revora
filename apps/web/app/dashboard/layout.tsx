@@ -14,10 +14,11 @@ import {
   Bell,
   Plus,
   Share2,
-  BarChart2,
   Puzzle,
   LucideIcon,
+  CheckCircle2,
 } from "lucide-react";
+import { authFetch } from "@/utils/api";
 
 interface SidebarItemProps {
   icon: LucideIcon;
@@ -49,16 +50,40 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     full_name?: string;
     email?: string;
     role?: string;
+    company_name?: string | null;
   } | null>(null);
 
+  const [onboardingData, setOnboardingData] = useState({ company_name: "", role: "Founder" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/auth/login");
-      return;
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenFromUrl = urlParams.get("token");
+      const userFromUrl = urlParams.get("user");
+      
+      if (tokenFromUrl) {
+        localStorage.setItem("token", tokenFromUrl);
+        if (userFromUrl) {
+          try {
+            const parsedUser = JSON.parse(decodeURIComponent(userFromUrl));
+            localStorage.setItem("user", JSON.stringify(parsedUser));
+            setUser(parsedUser);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          router.push("/auth/login");
+          return;
+        }
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) setUser(JSON.parse(storedUser));
+      }
     }
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
   }, [router]);
 
   const handleLogout = () => {
@@ -67,8 +92,80 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     router.push("/auth/login");
   };
 
+  const handleOnboardingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await authFetch(`${API_URL}/auth/onboarding`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(onboardingData)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const updatedUser = { ...user, company_name: data.company_name, role: data.role };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+    } catch(e) {
+      console.error(e);
+    }
+    setIsSubmitting(false);
+  };
+
   return (
     <div className="flex h-screen bg-[#0d0d0d] text-white font-syne overflow-hidden">
+      {/* Onboarding Modal Overlay */}
+      {user && user.company_name === null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+          <div className="bg-[#0a0a0a] border border-white/[0.08] p-8 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+              <Zap className="w-48 h-48 text-[#f05a28]" />
+            </div>
+            
+            <h2 className="text-2xl font-black mb-2 tracking-tight">Complete your profile</h2>
+            <p className="text-white/50 text-sm mb-6">Tell us a bit about your organization so we can tailor your outreach campaigns.</p>
+            
+            <form onSubmit={handleOnboardingSubmit} className="space-y-4 relative z-10">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-1.5">Company Name</label>
+                <input
+                  required
+                  type="text"
+                  value={onboardingData.company_name}
+                  onChange={e => setOnboardingData({...onboardingData, company_name: e.target.value})}
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f05a28] transition-colors placeholder:text-white/20"
+                  placeholder="e.g. Acme Corp"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-white/50 mb-1.5">Your Role</label>
+                <select
+                  required
+                  value={onboardingData.role}
+                  onChange={e => setOnboardingData({...onboardingData, role: e.target.value})}
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#f05a28] transition-colors appearance-none"
+                >
+                  <option value="Founder">Founder / CEO</option>
+                  <option value="Sales Head">Head of Sales</option>
+                  <option value="Marketing">Marketing Lead</option>
+                  <option value="SDR">SDR / BDR</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-[#f05a28] text-white rounded-xl py-3.5 px-4 font-bold text-sm tracking-wide mt-6 hover:bg-[#d44e22] transition-colors shadow-[0_4px_24px_rgba(240,90,40,0.4)] flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? "Saving..." : "Start Growing"} <CheckCircle2 className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Sidebar */}
       <aside className="w-56 border-r border-white/[0.06] bg-[#0a0a0a] flex flex-col justify-between hidden lg:flex shrink-0">
         {/* Logo */}

@@ -1,4 +1,6 @@
 "use client";
+import { authFetch } from "@/utils/api";
+
 
 import { useEffect, useState } from "react";
 import {
@@ -45,7 +47,7 @@ export default function DashboardOverview() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(
+        const res = await authFetch(
           `${process.env.NEXT_PUBLIC_API_URL}/campaign/`,
           { cache: "no-store" },
         );

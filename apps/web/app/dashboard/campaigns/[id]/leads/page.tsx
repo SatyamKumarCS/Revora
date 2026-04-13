@@ -1,4 +1,6 @@
 "use client";
+import { authFetch } from "@/utils/api";
+
 
 import { useEffect, useState, use, useRef, useCallback } from "react";
 import {
@@ -65,7 +67,7 @@ export default function LeadsResultPage({
   const fetchLeads = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/campaign/${campaignId}/leads`,
         { cache: "no-store" },
       );
@@ -82,7 +84,7 @@ export default function LeadsResultPage({
   useEffect(() => {
     const fetchMeta = async () => {
       try {
-        const res = await fetch(
+        const res = await authFetch(
           `${process.env.NEXT_PUBLIC_API_URL}/campaign/`,
           { cache: "no-store" },
         );
@@ -122,7 +124,7 @@ export default function LeadsResultPage({
   const updateStatus = async (s: CampaignStatus) => {
     setStatus(s);
     setStatusOpen(false);
-    await fetch(
+    await authFetch(
       `${process.env.NEXT_PUBLIC_API_URL}/campaign/${campaignId}/status`,
       {
         method: "PATCH",

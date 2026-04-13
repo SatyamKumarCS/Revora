@@ -323,6 +323,32 @@ export default function SignupPage() {
                 </button>
               </form>
 
+              {/* Divider */}
+              <div className="my-5 flex items-center gap-4">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/15 px-2 py-1 rounded-full border border-white/[0.05] bg-white/[0.02] backdrop-blur-sm">
+                  Network Nodes
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              </div>
+
+              {/* OAuth Buttons */}
+              <div className="flex flex-col gap-3">
+                <a
+                  href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/google/login`}
+                  className="flex items-center justify-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-sm py-3.5 text-xs font-black uppercase tracking-widest text-[#5B6EFF] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:bg-white/[0.07] hover:border-[#5B6EFF]/30 hover:text-white active:scale-95"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.187 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+                  </svg>
+                  Login with Google
+                </a>
+              </div>
+
               <div className="mt-6 text-center">
                 <p className="text-xs text-white/30 font-medium">
                   Already registered?{" "}

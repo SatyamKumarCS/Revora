@@ -1,4 +1,6 @@
 "use client";
+import { authFetch } from "@/utils/api";
+
 
 import { useState, FormEvent, use } from "react";
 import {
@@ -39,7 +41,7 @@ export default function ICPConfigurationPage({
     setError("");
 
     try {
-      const icpRes = await fetch(
+      const icpRes = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/icp/create`,
         {
           method: "POST",
@@ -56,7 +58,7 @@ export default function ICPConfigurationPage({
       );
       if (!icpRes.ok) throw new Error("Failed to save ICP Profile");
 
-      const genRes = await fetch(
+      const genRes = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/campaign/${campaignId}/generate-leads`,
         {
           method: "POST",

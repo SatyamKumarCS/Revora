@@ -1,4 +1,6 @@
 "use client";
+import { authFetch } from "@/utils/api";
+
 
 import { useEffect, useState } from "react";
 import {
@@ -54,7 +56,7 @@ export default function OutreachPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(
+        const res = await authFetch(
           `${process.env.NEXT_PUBLIC_API_URL}/campaign/`,
           { cache: "no-store" },
         );
@@ -64,7 +66,7 @@ export default function OutreachPage() {
         const withLeads = await Promise.all(
           filtered.map(async (c) => {
             try {
-              const lr = await fetch(
+              const lr = await authFetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/campaign/${c.id}/leads`,
                 { cache: "no-store" },
               );
@@ -118,7 +120,7 @@ export default function OutreachPage() {
     const nextVersion = resetVersion ? 1 : draftVersion + 1;
     setDraftVersion(nextVersion);
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/campaign/${selectedCampaign.id}/generate-email`,
         {
           method: "POST",

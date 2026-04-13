@@ -280,42 +280,20 @@ export default function LoginPage() {
               </div>
 
               {/* OAuth Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  {
-                    label: "Google",
-                    icon: (
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.187 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    label: "Github",
-                    icon: (
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.042-1.416-4.042-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.01 1.741 2.66 1.258 3.328.961.101-.743.398-1.258.726-1.548-2.664-.316-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.803 5.623-5.476 5.922.43.371.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                      </svg>
-                    ),
-                  },
-                ].map((btn) => (
-                  <button
-                    key={btn.label}
-                    type="button"
-                    className="flex items-center justify-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-sm py-3 text-[11px] font-black uppercase tracking-widest text-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:bg-white/[0.07] hover:border-white/10 hover:text-white active:scale-95"
+              <div className="flex flex-col gap-3">
+                <a
+                  href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/google/login`}
+                  className="flex items-center justify-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-sm py-3.5 text-xs font-black uppercase tracking-widest text-[#5B6EFF] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all hover:bg-white/[0.07] hover:border-[#5B6EFF]/30 hover:text-white active:scale-95"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
                   >
-                    {btn.icon}
-                    {btn.label}
-                  </button>
-                ))}
+                    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.187 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+                  </svg>
+                  Login with Google
+                </a>
               </div>
 
               <div className="mt-6 text-center">
